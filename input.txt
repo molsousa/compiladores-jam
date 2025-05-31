@@ -1,0 +1,18 @@
+void
+integer
+float
+integer y
+x1
+y2
+true
+false
+while
+for
++
+-
+!=
+==
+=
+||
+&&
+@
