@@ -20,7 +20,8 @@ class InfoToken {
 }
 
 public class Lexico implements LexicoConstants {
-        private LinkedList< InfoToken > l = new LinkedList<>();
+        public static LinkedList< InfoToken > reservada = new LinkedList<>();
+        public static LinkedList< InfoToken > simbolo = new LinkedList<>();
 
         public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
                 Lexico parser;
@@ -38,7 +39,8 @@ public class Lexico implements LexicoConstants {
                         parser = new Lexico(arquivo);
                         parser.processarEntrada();
 
-                        parser.imprimirTokens();
+                        parser.imprimirTokens(reservada);
+                        parser.imprimirTokens(simbolo);
                 }
                 catch(ParseException e) {
                         System.out.println(e);
@@ -48,11 +50,11 @@ public class Lexico implements LexicoConstants {
                 }
         }
 
-        public void inserirToken(String tipo, String lexema) {
+        public void inserirToken(LinkedList<InfoToken> l, String tipo, String lexema) {
                 l.add(new InfoToken(tipo, lexema));
         }
 
-        public void imprimirTokens() {
+        public void imprimirTokens(LinkedList<InfoToken> l) {
                 if(l.isEmpty()) {
                         System.out.println("Lista vazia");
                         return;
@@ -78,6 +80,11 @@ public class Lexico implements LexicoConstants {
       case TOKEN_RETURN:
       case TOKEN_TRUE:
       case TOKEN_FALSE:
+      case TOKEN_DOUBLE:
+      case TOKEN_SWITCH:
+      case TOKEN_DO:
+      case TOKEN_TRY:
+      case TOKEN_EXCEPT:
       case ADICAO:
       case SUBTRACAO:
       case MULTIPLICACAO:
@@ -107,157 +114,182 @@ public class Lexico implements LexicoConstants {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case TOKEN_IF:{
         t = jj_consume_token(TOKEN_IF);
-inserirToken("RESERVADA_IF", t.image);
+inserirToken(reservada, "CONDICIONAL", t.image);
         break;
         }
       case TOKEN_ELSE:{
         t = jj_consume_token(TOKEN_ELSE);
-inserirToken("RESERVADA_ELSE", t.image);
+inserirToken(reservada, "CONDICIONAL", t.image);
         break;
         }
       case TOKEN_WHILE:{
         t = jj_consume_token(TOKEN_WHILE);
-inserirToken("RESERVADA_WHILE", t.image);
+inserirToken(reservada, "REPETICAO", t.image);
         break;
         }
       case TOKEN_FOR:{
         t = jj_consume_token(TOKEN_FOR);
-inserirToken("RESERVADA_FOR", t.image);
+inserirToken(reservada, "REPETICAO", t.image);
         break;
         }
       case TOKEN_VOID:{
         t = jj_consume_token(TOKEN_VOID);
-inserirToken("RESERVADA_VOID", t.image);
+inserirToken(reservada, "TIPO_DADO", t.image);
         break;
         }
       case TOKEN_INT:{
         t = jj_consume_token(TOKEN_INT);
-inserirToken("RESERVADA_INTEGER", t.image);
+inserirToken(reservada, "TIPO_DADO", t.image);
         break;
         }
       case TOKEN_FLOAT:{
         t = jj_consume_token(TOKEN_FLOAT);
-inserirToken("RESERVADA_FLOAT", t.image);
+inserirToken(reservada, "TIPO_DADO", t.image);
         break;
         }
       case TOKEN_CHAR:{
         t = jj_consume_token(TOKEN_CHAR);
-inserirToken("RESERVADA_CHAR", t.image);
+inserirToken(reservada, "TIPO_DADO", t.image);
         break;
         }
       case TOKEN_BOOL:{
         t = jj_consume_token(TOKEN_BOOL);
-inserirToken("RESERVADA_BOOL", t.image);
+inserirToken(reservada, "TIPO_DADO", t.image);
         break;
         }
       case TOKEN_RETURN:{
         t = jj_consume_token(TOKEN_RETURN);
-inserirToken("RESERVADA_RETURN", t.image);
+inserirToken(reservada, "RETORNO", t.image);
         break;
         }
       case TOKEN_TRUE:{
         t = jj_consume_token(TOKEN_TRUE);
-inserirToken("RESERVADA_TRUE", t.image);
+inserirToken(reservada, "VALOR_BOOLEANO", t.image);
         break;
         }
       case TOKEN_FALSE:{
         t = jj_consume_token(TOKEN_FALSE);
-inserirToken("RESERVADA_FALSE", t.image);
+inserirToken(reservada, "VALOR_BOOLEANO", t.image);
+        break;
+        }
+      case TOKEN_DOUBLE:{
+        t = jj_consume_token(TOKEN_DOUBLE);
+inserirToken(reservada, "TIPO_DADO", t.image);
+        break;
+        }
+      case TOKEN_SWITCH:{
+        t = jj_consume_token(TOKEN_SWITCH);
+inserirToken(reservada, "CONDICIONAL", t.image);
+        break;
+        }
+      case TOKEN_DO:{
+        t = jj_consume_token(TOKEN_DO);
+inserirToken(reservada, "REPETICAO",  t.image);
+        break;
+        }
+      case TOKEN_TRY:{
+        t = jj_consume_token(TOKEN_TRY);
+inserirToken(reservada, "EXCECAO", t.image);
+        break;
+        }
+      case TOKEN_EXCEPT:{
+        t = jj_consume_token(TOKEN_EXCEPT);
+inserirToken(reservada, "EXCECAO", t.image);
         break;
         }
       case ADICAO:{
         t = jj_consume_token(ADICAO);
-inserirToken("SIMBOLO_ADICAO", t.image);
+inserirToken(reservada, "OPERADOR_ADICAO", t.image);
         break;
         }
       case SUBTRACAO:{
         t = jj_consume_token(SUBTRACAO);
-inserirToken("SIMBOLO_SUBTRACAO", t.image);
+inserirToken(reservada, "OPERADOR_SUBTRACAO", t.image);
         break;
         }
       case MULTIPLICACAO:{
         t = jj_consume_token(MULTIPLICACAO);
-inserirToken("SIMBOLO_MULTIPLICACAO", t.image);
+inserirToken(reservada, "OPERADOR_MULTIPLICACAO", t.image);
         break;
         }
       case DIVISAO:{
         t = jj_consume_token(DIVISAO);
-inserirToken("SIMBOLO_DIVISAO", t.image);
+inserirToken(reservada, "OPERADOR_DIVISAO", t.image);
         break;
         }
       case ATRIBUICAO:{
         t = jj_consume_token(ATRIBUICAO);
-inserirToken("SIMBOLO_ATRIBUICAO", t.image);
+inserirToken(reservada, "OPERADOR_ATRIBUICAO", t.image);
         break;
         }
       case MODULO:{
         t = jj_consume_token(MODULO);
-inserirToken("SIMBOLO_MODULO", t.image);
+inserirToken(reservada, "OPERADOR_MODULO", t.image);
         break;
         }
       case IGUAL:{
         t = jj_consume_token(IGUAL);
-inserirToken("SIMBOLO_IGUAL", t.image);
+inserirToken(reservada, "OPERADOR_IGUAL", t.image);
         break;
         }
       case DIFERENTE:{
         t = jj_consume_token(DIFERENTE);
-inserirToken("SIMBOLO_DIFERENTE", t.image);
+inserirToken(reservada, "OPERADOR_DIFERENTE", t.image);
         break;
         }
       case MENOR:{
         t = jj_consume_token(MENOR);
-inserirToken("SIMBOLO_MENOR", t.image);
+inserirToken(reservada, "OPERADOR_MENOR", t.image);
         break;
         }
       case MAIOR:{
         t = jj_consume_token(MAIOR);
-inserirToken("SIMBOLO_MAIOR", t.image);
+inserirToken(reservada, "OPERADOR_MAIOR", t.image);
         break;
         }
       case MAIOR_IGUAL:{
         t = jj_consume_token(MAIOR_IGUAL);
-inserirToken("SIMBOLO_MAIOR_IGUAL", t.image);
+inserirToken(reservada, "OPERADOR_MAIOR_IGUAL", t.image);
         break;
         }
       case MENOR_IGUAL:{
         t = jj_consume_token(MENOR_IGUAL);
-inserirToken("SIMBOLO_MENOR_IGUAL", t.image);
+inserirToken(reservada, "OPERADOR_MENOR_IGUAL", t.image);
         break;
         }
       case AND:{
         t = jj_consume_token(AND);
-inserirToken("SIMBOLO_AND", t.image);
+inserirToken(reservada, "OPERADOR_AND", t.image);
         break;
         }
       case NOT:{
         t = jj_consume_token(NOT);
-inserirToken("SIMBOLO_NOT", t.image);
+inserirToken(reservada, "OPERADOR_NOT", t.image);
         break;
         }
       case OR:{
         t = jj_consume_token(OR);
-inserirToken("SIMBOLO_OR", t.image);
+inserirToken(reservada, "OPERADOR_OR", t.image);
         break;
         }
       case INTEIRO:{
         t = jj_consume_token(INTEIRO);
-inserirToken("CONSTANTE_INTEIRA", t.image);
+inserirToken(simbolo, "CONSTANTE_INTEIRA", t.image);
         break;
         }
       case REAL:{
         t = jj_consume_token(REAL);
-inserirToken("CONSTANTE_REAL", t.image);
+inserirToken(simbolo, "CONSTANTE_REAL", t.image);
         break;
         }
       case IDENTIFICADOR:{
         t = jj_consume_token(IDENTIFICADOR);
-inserirToken("IDENTIFICADOR", t.image);
+inserirToken(simbolo, "IDENTIFICADOR", t.image);
         break;
         }
       case CARACTER_ILEGAL:{
         t = jj_consume_token(CARACTER_ILEGAL);
-inserirToken("CARACTER_ILEGAL", t.image);
+inserirToken(simbolo, "CARACTER_ILEGAL", t.image);
         break;
         }
       default:
@@ -289,7 +321,7 @@ inserirToken("CARACTER_ILEGAL", t.image);
 	   jj_la1_0 = new int[] {0xffffffe0,0xffffffe0,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x27,0x27,};
+	   jj_la1_1 = new int[] {0x9c01f,0x9c01f,};
 	}
 
   /** Constructor with InputStream. */
@@ -414,7 +446,7 @@ inserirToken("CARACTER_ILEGAL", t.image);
   /** Generate ParseException. */
   public ParseException generateParseException() {
 	 jj_expentries.clear();
-	 boolean[] la1tokens = new boolean[38];
+	 boolean[] la1tokens = new boolean[52];
 	 if (jj_kind >= 0) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
@@ -431,7 +463,7 @@ inserirToken("CARACTER_ILEGAL", t.image);
 		 }
 	   }
 	 }
-	 for (int i = 0; i < 38; i++) {
+	 for (int i = 0; i < 52; i++) {
 	   if (la1tokens[i]) {
 		 jj_expentry = new int[1];
 		 jj_expentry[0] = i;

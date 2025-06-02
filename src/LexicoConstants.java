@@ -33,47 +33,75 @@ public interface LexicoConstants {
   /** RegularExpression Id. */
   int TOKEN_FALSE = 16;
   /** RegularExpression Id. */
-  int ADICAO = 17;
+  int TOKEN_DOUBLE = 17;
   /** RegularExpression Id. */
-  int SUBTRACAO = 18;
+  int TOKEN_SWITCH = 18;
   /** RegularExpression Id. */
-  int MULTIPLICACAO = 19;
+  int TOKEN_DO = 19;
   /** RegularExpression Id. */
-  int DIVISAO = 20;
+  int TOKEN_TRY = 20;
   /** RegularExpression Id. */
-  int ATRIBUICAO = 21;
+  int TOKEN_EXCEPT = 21;
   /** RegularExpression Id. */
-  int MODULO = 22;
+  int ADICAO = 22;
   /** RegularExpression Id. */
-  int IGUAL = 23;
+  int SUBTRACAO = 23;
   /** RegularExpression Id. */
-  int DIFERENTE = 24;
+  int MULTIPLICACAO = 24;
   /** RegularExpression Id. */
-  int MENOR = 25;
+  int DIVISAO = 25;
   /** RegularExpression Id. */
-  int MAIOR = 26;
+  int ATRIBUICAO = 26;
   /** RegularExpression Id. */
-  int MAIOR_IGUAL = 27;
+  int MODULO = 27;
   /** RegularExpression Id. */
-  int MENOR_IGUAL = 28;
+  int IGUAL = 28;
   /** RegularExpression Id. */
-  int AND = 29;
+  int DIFERENTE = 29;
   /** RegularExpression Id. */
-  int NOT = 30;
+  int MENOR = 30;
   /** RegularExpression Id. */
-  int OR = 31;
+  int MAIOR = 31;
   /** RegularExpression Id. */
-  int INTEIRO = 32;
+  int MAIOR_IGUAL = 32;
   /** RegularExpression Id. */
-  int REAL = 33;
+  int MENOR_IGUAL = 33;
   /** RegularExpression Id. */
-  int IDENTIFICADOR = 34;
+  int AND = 34;
   /** RegularExpression Id. */
-  int DIGITO = 35;
+  int NOT = 35;
   /** RegularExpression Id. */
-  int LETRA = 36;
+  int OR = 36;
   /** RegularExpression Id. */
-  int CARACTER_ILEGAL = 37;
+  int PONTO_VIRGULA = 37;
+  /** RegularExpression Id. */
+  int VIRGULA = 38;
+  /** RegularExpression Id. */
+  int PONTO = 39;
+  /** RegularExpression Id. */
+  int ABRE_CHAVES = 40;
+  /** RegularExpression Id. */
+  int FECHA_CHAVES = 41;
+  /** RegularExpression Id. */
+  int ABRE_PARENTESIS = 42;
+  /** RegularExpression Id. */
+  int FECHA_PARENTESIS = 43;
+  /** RegularExpression Id. */
+  int ABRE_COLCHETES = 44;
+  /** RegularExpression Id. */
+  int FECHA_COLCHETES = 45;
+  /** RegularExpression Id. */
+  int INTEIRO = 46;
+  /** RegularExpression Id. */
+  int REAL = 47;
+  /** RegularExpression Id. */
+  int IDENTIFICADOR = 48;
+  /** RegularExpression Id. */
+  int DIGITO = 49;
+  /** RegularExpression Id. */
+  int LETRA = 50;
+  /** RegularExpression Id. */
+  int CARACTER_ILEGAL = 51;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -97,6 +125,11 @@ public interface LexicoConstants {
     "\"return\"",
     "\"true\"",
     "\"false\"",
+    "\"double\"",
+    "\"switch\"",
+    "\"do\"",
+    "\"try\"",
+    "\"except\"",
     "\"+\"",
     "\"-\"",
     "\"*\"",
@@ -112,6 +145,15 @@ public interface LexicoConstants {
     "\"&&\"",
     "\"!\"",
     "\"||\"",
+    "\";\"",
+    "\",\"",
+    "\".\"",
+    "\"{\"",
+    "\"}\"",
+    "\"(\"",
+    "\")\"",
+    "\"[\"",
+    "\"]\"",
     "<INTEIRO>",
     "<REAL>",
     "<IDENTIFICADOR>",
