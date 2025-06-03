@@ -16,3 +16,4 @@ for
 ||
 &&
 @
+"texto na tela"

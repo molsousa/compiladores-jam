@@ -15,7 +15,7 @@ class InfoToken {
 
         @Override
         public String toString() {
-                return "Tipo: "+tipo+ ", Lexema: '"+ lexema+ "'";
+                return "Tipo: "+tipo+ "\nLexema: <'"+ lexema+ "'>\n";
         }
 }
 
@@ -28,7 +28,7 @@ public class Lexico implements LexicoConstants {
                 FileInputStream arquivo;
 
                 try {
-                  arquivo = new FileInputStream("input.txt");
+                  arquivo = new FileInputStream("fonte_2.txt");
                 }
                 catch(FileNotFoundException e) {
                         System.out.println(e);
@@ -85,6 +85,7 @@ public class Lexico implements LexicoConstants {
       case TOKEN_DO:
       case TOKEN_TRY:
       case TOKEN_EXCEPT:
+      case TOKEN_IMPORT:
       case ADICAO:
       case SUBTRACAO:
       case MULTIPLICACAO:
@@ -100,9 +101,26 @@ public class Lexico implements LexicoConstants {
       case AND:
       case NOT:
       case OR:
+      case INCREMENTO:
+      case DECREMENTO:
+      case SOMA_ATRIBUICAO:
+      case SUBTRACAO_ATRIBUICAO:
+      case MULTIPLICACAO_ATRIBUICAO:
+      case DIVISAO_ATRIBUICAO:
+      case MODULO_ATRIBUICAO:
+      case PONTO_VIRGULA:
+      case VIRGULA:
+      case PONTO:
+      case ABRE_CHAVES:
+      case FECHA_CHAVES:
+      case ABRE_PARENTESIS:
+      case FECHA_PARENTESIS:
+      case ABRE_COLCHETES:
+      case FECHA_COLCHETES:
       case INTEIRO:
       case REAL:
       case IDENTIFICADOR:
+      case STRING:
       case CARACTER_ILEGAL:{
         ;
         break;
@@ -197,6 +215,11 @@ inserirToken(reservada, "EXCECAO", t.image);
 inserirToken(reservada, "EXCECAO", t.image);
         break;
         }
+      case TOKEN_IMPORT:{
+        t = jj_consume_token(TOKEN_IMPORT);
+inserirToken(reservada, "IMPORT", t.image);
+        break;
+        }
       case ADICAO:{
         t = jj_consume_token(ADICAO);
 inserirToken(reservada, "OPERADOR_ADICAO", t.image);
@@ -272,6 +295,86 @@ inserirToken(reservada, "OPERADOR_NOT", t.image);
 inserirToken(reservada, "OPERADOR_OR", t.image);
         break;
         }
+      case INCREMENTO:{
+        t = jj_consume_token(INCREMENTO);
+inserirToken(reservada, "OPERADOR_INCREMENTO", t.image);
+        break;
+        }
+      case DECREMENTO:{
+        t = jj_consume_token(DECREMENTO);
+inserirToken(reservada, "OPERADOR_DECREMENTO", t.image);
+        break;
+        }
+      case SOMA_ATRIBUICAO:{
+        t = jj_consume_token(SOMA_ATRIBUICAO);
+inserirToken(reservada, "SOMA_ATRIBUICAO", t.image);
+        break;
+        }
+      case SUBTRACAO_ATRIBUICAO:{
+        t = jj_consume_token(SUBTRACAO_ATRIBUICAO);
+inserirToken(reservada, "SUBTRACAO_ATRIBUICAO", t.image);
+        break;
+        }
+      case MULTIPLICACAO_ATRIBUICAO:{
+        t = jj_consume_token(MULTIPLICACAO_ATRIBUICAO);
+inserirToken(reservada, "MULTIPLICACAO_ATRIBUICAO", t.image);
+        break;
+        }
+      case DIVISAO_ATRIBUICAO:{
+        t = jj_consume_token(DIVISAO_ATRIBUICAO);
+inserirToken(reservada, "DIVISAO_ATRIBUICAO", t.image);
+        break;
+        }
+      case MODULO_ATRIBUICAO:{
+        t = jj_consume_token(MODULO_ATRIBUICAO);
+inserirToken(reservada, "MODULO_ATRIBUICAO", t.image);
+        break;
+        }
+      case PONTO_VIRGULA:{
+        t = jj_consume_token(PONTO_VIRGULA);
+inserirToken(reservada, "SEPARADOR_PONTO_VIRGULA", t.image);
+        break;
+        }
+      case VIRGULA:{
+        t = jj_consume_token(VIRGULA);
+inserirToken(reservada, "SEPARADOR_VIRGULA", t.image);
+        break;
+        }
+      case PONTO:{
+        t = jj_consume_token(PONTO);
+inserirToken(reservada, "SEPARADOR_PONTO", t.image);
+        break;
+        }
+      case ABRE_CHAVES:{
+        t = jj_consume_token(ABRE_CHAVES);
+inserirToken(reservada, "SEPARADOR_ABRE_CHAVES", t.image);
+        break;
+        }
+      case FECHA_CHAVES:{
+        t = jj_consume_token(FECHA_CHAVES);
+inserirToken(reservada, "SEPARADOR_FECHA_CHAVES", t.image);
+        break;
+        }
+      case ABRE_PARENTESIS:{
+        t = jj_consume_token(ABRE_PARENTESIS);
+inserirToken(reservada, "SEPARADOR_ABRE_PARENTESIS", t.image);
+        break;
+        }
+      case FECHA_PARENTESIS:{
+        t = jj_consume_token(FECHA_PARENTESIS);
+inserirToken(reservada, "SEPARADOR_FECHA_PARENTESIS", t.image);
+        break;
+        }
+      case ABRE_COLCHETES:{
+        t = jj_consume_token(ABRE_COLCHETES);
+inserirToken(reservada, "SEPARADOR_ABRE_COLCHETES", t.image);
+        break;
+        }
+      case FECHA_COLCHETES:{
+        t = jj_consume_token(FECHA_COLCHETES);
+inserirToken(reservada, "SEPARADOR_FECHA_COLCHETES", t.image);
+        break;
+        }
       case INTEIRO:{
         t = jj_consume_token(INTEIRO);
 inserirToken(simbolo, "CONSTANTE_INTEIRA", t.image);
@@ -290,6 +393,11 @@ inserirToken(simbolo, "IDENTIFICADOR", t.image);
       case CARACTER_ILEGAL:{
         t = jj_consume_token(CARACTER_ILEGAL);
 inserirToken(simbolo, "CARACTER_ILEGAL", t.image);
+        break;
+        }
+      case STRING:{
+        t = jj_consume_token(STRING);
+inserirToken(simbolo, "STRING_LITERAL", t.image);
         break;
         }
       default:
@@ -321,7 +429,7 @@ inserirToken(simbolo, "CARACTER_ILEGAL", t.image);
 	   jj_la1_0 = new int[] {0xffffffe0,0xffffffe0,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x9c01f,0x9c01f,};
+	   jj_la1_1 = new int[] {0x13ffffff,0x13ffffff,};
 	}
 
   /** Constructor with InputStream. */
@@ -446,7 +554,7 @@ inserirToken(simbolo, "CARACTER_ILEGAL", t.image);
   /** Generate ParseException. */
   public ParseException generateParseException() {
 	 jj_expentries.clear();
-	 boolean[] la1tokens = new boolean[52];
+	 boolean[] la1tokens = new boolean[61];
 	 if (jj_kind >= 0) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
@@ -463,7 +571,7 @@ inserirToken(simbolo, "CARACTER_ILEGAL", t.image);
 		 }
 	   }
 	 }
-	 for (int i = 0; i < 52; i++) {
+	 for (int i = 0; i < 61; i++) {
 	   if (la1tokens[i]) {
 		 jj_expentry = new int[1];
 		 jj_expentry[0] = i;

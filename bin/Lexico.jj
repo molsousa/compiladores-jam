@@ -20,7 +20,7 @@ class InfoToken {
 
 	@Override
 	public String toString() {
-		return "Tipo: "+tipo+ ", Lexema: '"+ lexema+ "'";
+		return "Tipo: "+tipo+ "\nLexema: <'"+ lexema+ "'>\n";
 	}
 }
 
@@ -34,7 +34,7 @@ public class Lexico
 		FileInputStream arquivo;
 
 		try {
-		  arquivo = new FileInputStream("input.txt");
+		  arquivo = new FileInputStream("fonte_2.txt");
 		}
 		catch(FileNotFoundException e) {
 			System.out.println(e);
@@ -57,7 +57,7 @@ public class Lexico
 	}
 	
 	public void inserirToken(LinkedList<InfoToken> l, String tipo, String lexema) {
-		l.add(new InfoToken(tipo, lexema));
+ 		l.add(new InfoToken(tipo, lexema));
 	}
 
 	public void imprimirTokens(LinkedList<InfoToken> l) {
@@ -79,7 +79,6 @@ SKIP :
 | "\r"
 | "\t"
 | "\n"
-| < COMENTARIO >
 }
 
 // Palavras reservadas
@@ -102,6 +101,7 @@ TOKEN:
 | 	< TOKEN_DO: "do" >
 | 	< TOKEN_TRY: "try" >
 | 	< TOKEN_EXCEPT: "except" >
+| 	< TOKEN_IMPORT: "import" >
 }
 
 // Operadores
@@ -122,6 +122,13 @@ TOKEN:
 | < AND: "&&" >
 | < NOT: "!" >
 | < OR: "||" >
+| < INCREMENTO: "++" >
+| < DECREMENTO: "--" >
+| < SOMA_ATRIBUICAO: "+=" >
+| < SUBTRACAO_ATRIBUICAO: "-=" >
+| < MULTIPLICACAO_ATRIBUICAO: "*=" >
+| < DIVISAO_ATRIBUICAO: "/=" >
+| < MODULO_ATRIBUICAO: "%/" >
 }
 
 // Separadores
@@ -143,6 +150,7 @@ TOKEN :
   < INTEIRO: (["+","-"])? (< DIGITO >)+ >
 | < REAL: < INTEIRO > (< DIGITO >)+ "." (< DIGITO >)+ >
 | < IDENTIFICADOR: < LETRA > (< LETRA > | < DIGITO >)* >
+| < STRING: "\"" (~["\""])* "\"" >
 | < DIGITO : ["0"-"9"] >
 | < LETRA: ["a"-"z","A"-"Z"] >
 }
@@ -150,7 +158,6 @@ TOKEN :
 TOKEN:
 {
 	< CARACTER_ILEGAL: (~[]) >
-	< COMENTARIO: "//" (["\n","\r"])* ["\n","\r","\r\n"] >
 }
 
 void processarEntrada():
@@ -176,6 +183,7 @@ void processarEntrada():
 | 	t = < TOKEN_DO > { inserirToken(reservada, "REPETICAO",	 t.image); }
 | 	t = < TOKEN_TRY > { inserirToken(reservada, "EXCECAO", t.image); }
 | 	t = < TOKEN_EXCEPT > { inserirToken(reservada, "EXCECAO", t.image); }
+| 	t = < TOKEN_IMPORT > { inserirToken(reservada, "IMPORT", t.image); }
 
 |   t = < ADICAO > { inserirToken(reservada, "OPERADOR_ADICAO", t.image); }
 | 	t = < SUBTRACAO > { inserirToken(reservada, "OPERADOR_SUBTRACAO", t.image); }
@@ -192,11 +200,29 @@ void processarEntrada():
 | 	t = < AND > { inserirToken(reservada, "OPERADOR_AND", t.image); }
 | 	t = < NOT > { inserirToken(reservada, "OPERADOR_NOT", t.image); }
 | 	t = < OR > { inserirToken(reservada, "OPERADOR_OR", t.image); }
+| 	t = < INCREMENTO > { inserirToken(reservada, "OPERADOR_INCREMENTO", t.image); }
+| 	t = < DECREMENTO > { inserirToken(reservada, "OPERADOR_DECREMENTO", t.image); }
+| 	t = < SOMA_ATRIBUICAO > { inserirToken(reservada, "SOMA_ATRIBUICAO", t.image); }
+| 	t = < SUBTRACAO_ATRIBUICAO > { inserirToken(reservada, "SUBTRACAO_ATRIBUICAO", t.image); }
+| 	t = < MULTIPLICACAO_ATRIBUICAO > { inserirToken(reservada, "MULTIPLICACAO_ATRIBUICAO", t.image); }
+| 	t = < DIVISAO_ATRIBUICAO > { inserirToken(reservada, "DIVISAO_ATRIBUICAO", t.image); }
+| 	t = < MODULO_ATRIBUICAO > { inserirToken(reservada, "MODULO_ATRIBUICAO", t.image); }
+
+| 	t = < PONTO_VIRGULA > { inserirToken(reservada, "SEPARADOR_PONTO_VIRGULA", t.image); }
+| 	t = < VIRGULA > { inserirToken(reservada, "SEPARADOR_VIRGULA", t.image); }
+| 	t = < PONTO > { inserirToken(reservada, "SEPARADOR_PONTO", t.image); }
+| 	t = < ABRE_CHAVES > { inserirToken(reservada, "SEPARADOR_ABRE_CHAVES", t.image); }
+| 	t = < FECHA_CHAVES > { inserirToken(reservada, "SEPARADOR_FECHA_CHAVES", t.image); }
+| 	t = < ABRE_PARENTESIS > { inserirToken(reservada, "SEPARADOR_ABRE_PARENTESIS", t.image); }
+| 	t = < FECHA_PARENTESIS > { inserirToken(reservada, "SEPARADOR_FECHA_PARENTESIS", t.image); }
+| 	t = < ABRE_COLCHETES > { inserirToken(reservada, "SEPARADOR_ABRE_COLCHETES", t.image); }
+| 	t = < FECHA_COLCHETES > { inserirToken(reservada, "SEPARADOR_FECHA_COLCHETES", t.image); }
 
 | 	t = < INTEIRO > { inserirToken(simbolo, "CONSTANTE_INTEIRA", t.image); }
 | 	t = < REAL > { inserirToken(simbolo, "CONSTANTE_REAL", t.image); }
 | 	t = < IDENTIFICADOR > { inserirToken(simbolo, "IDENTIFICADOR", t.image); }
-| 	t = < CARACTER_ILEGAL > { inserirToken(simbolo, "CARACTER_ILEGAL", t.image); })*
+| 	t = < CARACTER_ILEGAL > { inserirToken(simbolo, "CARACTER_ILEGAL", t.image); }
+| 	t = < STRING > { inserirToken(simbolo, "STRING_LITERAL", t.image); })*
 < EOF >
 }
 
