@@ -5,70 +5,133 @@ options
 
 PARSER_BEGIN(Lexico)
 
+import java.util.Scanner;
 import java.util.LinkedList;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 class InfoToken {
-	String tipo;
-	String lexema;
+    String tipo;
+    String lexema;
+    int linha;
+    int coluna;
 
-	public InfoToken(String tipo, String lexema) {
-		this.tipo = tipo;
-		this.lexema = lexema;
-	}
+    public InfoToken(String tipo, String lexema, int linha, int coluna) {
+        this.tipo = tipo;
+        this.lexema = lexema;
+        this.linha = linha;
+        this.coluna = coluna;
+    }
 
-	@Override
-	public String toString() {
-		return "Tipo: "+tipo+ "\nLexema: <'"+ lexema+ "'>\n";
-	}
+    @Override
+    public String toString() {
+        return String.format("Tipo: %s\nLexema: <'%s'>\nLinha: %d, Coluna: %d\n", this.tipo, this.lexema, this.linha, this.coluna);
+    }
 }
 
 public class Lexico
 {
-  	public static LinkedList< InfoToken > reservada = new LinkedList<>();
-  	public static LinkedList< InfoToken > simbolo = new LinkedList<>();
-  	
-	public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
-		Lexico parser;
-		FileInputStream arquivo;
+    public static LinkedList<InfoToken> reservada = new LinkedList<>();
+    public static LinkedList<InfoToken> simbolo = new LinkedList<>();
+    public static LinkedList<InfoToken> erros = new LinkedList<>();
 
-		try {
-		  arquivo = new FileInputStream("fonte_2.txt");
-		}
-		catch(FileNotFoundException e) {
-			System.out.println(e);
-			return;
-		}
+    private static final int MAX = 32;
 
-		try {
-			parser = new Lexico(arquivo);
-			parser.processarEntrada();
+    public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
+        Lexico parser;
+        FileInputStream arquivo;
+        Scanner scanner = new Scanner(System.in);
+		String nomeArquivo;
+		int opcao;
 
-			parser.imprimirTokens(reservada);
-			parser.imprimirTokens(simbolo);
-		}
-		catch(ParseException e) {
-		  	System.out.println(e);
-		}
-		catch(TokenMgrError e) {
-			System.out.println(e);
-		}
-	}
+		System.out.print("Insira o nome do arquivo: ");
+        nomeArquivo = scanner.nextLine();
+
+        try {
+            arquivo = new FileInputStream(nomeArquivo);
+        }
+        catch(FileNotFoundException e) {
+            System.out.println(e);
+            return;
+        }
+
+        try {
+            parser = new Lexico(arquivo);
+            parser.processarEntrada();
+            
+			do {
+				menu();
+				opcao = scanner.nextInt();
+				buffer(scanner);
 	
-	public void inserirToken(LinkedList<InfoToken> l, String tipo, String lexema) {
- 		l.add(new InfoToken(tipo, lexema));
-	}
+				switch(opcao) {
+			    case 1:
+			        System.out.println("\n---PALAVRAS RESERVADAS E OPERADORES---");
+			        parser.imprimirTokens(reservada);
+			        break;
+			    case 2:
+			        System.out.println("\n---CONSTANTES E IDENTIFICADORES---");
+			        parser.imprimirTokens(simbolo);
+					break;
+				case 3:
+					if (!erros.isEmpty()) {
+			            System.out.println("---ERROS LÉXICOS---\n");
+			            parser.imprimirTokens(erros);
+			        }
+			        break;
+				case 0:
+					System.out.println("Obrigado!!");
+					break;
+				}
+			}while(opcao != 0);
+		}
+        
+		catch(ParseException e) {
+            System.out.println(e);
+        }
+        catch(TokenMgrError e) {
+            System.out.println(e);
+        }
+        
+        scanner.close();
+    }
 
-	public void imprimirTokens(LinkedList<InfoToken> l) {
-		if(l.isEmpty()) {
-			System.out.println("Lista vazia");
-			return;
+    public void inserirTokenUnico(LinkedList<InfoToken> l, String tipo, Token t) {
+        for (InfoToken tok : l) {
+            if (tok.lexema.equals(t.image)) {
+                return;
+            }
+        }
+        l.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
+    }
+    
+    public void inserirErro(String tipo, Token t) {
+        erros.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
+    }
+
+    public void imprimirTokens(LinkedList<InfoToken> l) {
+        if (l.isEmpty()) {
+            System.out.println("Lista vazia");
+            return;
+        }
+        for (InfoToken tok : l) {
+            System.out.println(tok);
+        }
+    }
+
+    public static void menu() {
+		System.out.println("1 - Imprimir palavras reservadas");
+		System.out.println("2 - Imprimir símbolos");
+		System.out.println("3 - Erros");
+		System.out.println("0 - Sair");
+		System.out.print("Insira uma opção: ");
+    }
+
+    public static void buffer(Scanner scanner) {
+		if(scanner.hasNextLine()) {
+		  	scanner.nextLine();
 		}
-		for(InfoToken tok : l) {
-			System.out.println(tok);
-		}
-	}
+    }
 }
 
 PARSER_END(Lexico)
@@ -84,80 +147,84 @@ SKIP :
 // Palavras reservadas
 TOKEN:
 {
-  	< TOKEN_IF: "if" >
+    < TOKEN_IF: "if" >
 |   < TOKEN_ELSE: "else" >
-| 	< TOKEN_WHILE: "while" >
-| 	< TOKEN_FOR: "for" >
-| 	< TOKEN_VOID: "void" >
-| 	< TOKEN_INT: "integer" >
-| 	< TOKEN_FLOAT: "float" >
-| 	< TOKEN_CHAR: "character" >
-| 	< TOKEN_BOOL: "boolean" >
-| 	< TOKEN_RETURN: "return" >
-| 	< TOKEN_TRUE: "true" >
-| 	< TOKEN_FALSE: "false" >
-| 	< TOKEN_DOUBLE: "double" >
-| 	< TOKEN_SWITCH: "switch" >
-| 	< TOKEN_DO: "do" >
-| 	< TOKEN_TRY: "try" >
-| 	< TOKEN_EXCEPT: "except" >
-| 	< TOKEN_IMPORT: "import" >
+|   < TOKEN_WHILE: "while" >
+|   < TOKEN_FOR: "for" >
+|   < TOKEN_VOID: "void" >
+|   < TOKEN_INT: "integer" >
+|   < TOKEN_FLOAT: "float" >
+|   < TOKEN_CHAR: "character" >
+|   < TOKEN_BOOL: "boolean" >
+|   < TOKEN_RETURN: "return" >
+|   < TOKEN_TRUE: "true" >
+|   < TOKEN_FALSE: "false" >
+|   < TOKEN_DOUBLE: "double" >
+|   < TOKEN_SWITCH: "switch" >
+|   < TOKEN_DO: "do" >
+|   < TOKEN_TRY: "try" >
+|   < TOKEN_EXCEPT: "except" >
+|   < TOKEN_IMPORT: "import" >
 }
 
 // Operadores
 TOKEN:
 {
-  < ADICAO : "+" >
-| < SUBTRACAO : "-" >
-| < MULTIPLICACAO : "*" >
-| < DIVISAO : "/" >
-| < ATRIBUICAO: "=" >
-| < MODULO: "%" >
-| < IGUAL: "==" >
-| < DIFERENTE: "!=" >
-| < MENOR: "<" >
-| < MAIOR: ">" >
-| < MAIOR_IGUAL: ">=" >
-| < MENOR_IGUAL: "<=" >
-| < AND: "&&" >
-| < NOT: "!" >
-| < OR: "||" >
-| < INCREMENTO: "++" >
-| < DECREMENTO: "--" >
-| < SOMA_ATRIBUICAO: "+=" >
-| < SUBTRACAO_ATRIBUICAO: "-=" >
-| < MULTIPLICACAO_ATRIBUICAO: "*=" >
-| < DIVISAO_ATRIBUICAO: "/=" >
-| < MODULO_ATRIBUICAO: "%/" >
+    < ADICAO : "+" >
+|   < SUBTRACAO : "-" >
+|   < MULTIPLICACAO : "*" >
+|   < DIVISAO : "/" >
+|   < ATRIBUICAO: "=" >
+|   < MODULO: "%" >
+|   < IGUAL: "==" >
+|   < DIFERENTE: "!=" >
+|   < MENOR: "<" >
+|   < MAIOR: ">" >
+|   < MAIOR_IGUAL: ">=" >
+|   < MENOR_IGUAL: "<=" >
+|   < AND: "&&" >
+|   < NOT: "!" >
+|   < OR: "||" >
+|   < INCREMENTO: "++" >
+|   < DECREMENTO: "--" >
+|   < SOMA_ATRIBUICAO: "+=" >
+|   < SUBTRACAO_ATRIBUICAO: "-=" >
+|   < MULTIPLICACAO_ATRIBUICAO: "*=" >
+|   < DIVISAO_ATRIBUICAO: "/=" >
+|   < MODULO_ATRIBUICAO: "%/" >
 }
 
-// Separadores
+// Simbolos reservados
 TOKEN:
 {
-  < PONTO_VIRGULA: ";" >
-| < VIRGULA: "," >
-| < PONTO: "." >
-| < ABRE_CHAVES: "{" >
-| < FECHA_CHAVES: "}" >
-| < ABRE_PARENTESIS: "(" >
-| < FECHA_PARENTESIS: ")" >
-| < ABRE_COLCHETES: "[" >
-| < FECHA_COLCHETES: "]" >
+    < PONTO_VIRGULA: ";" >
+|   < VIRGULA: "," >
+|   < PONTO: "." >
+|   < ABRE_CHAVES: "{" >
+|   < FECHA_CHAVES: "}" >
+|   < ABRE_PARENTESIS: "(" >
+|   < FECHA_PARENTESIS: ")" >
+|   < ABRE_COLCHETES: "[" >
+|   < FECHA_COLCHETES: "]" >
 }
 
+// Tabela de simbolos e erros
 TOKEN :
 {
-  < INTEIRO: (["+","-"])? (< DIGITO >)+ >
-| < REAL: < INTEIRO > (< DIGITO >)+ "." (< DIGITO >)+ >
-| < IDENTIFICADOR: < LETRA > (< LETRA > | < DIGITO >)* >
-| < STRING: "\"" (~["\""])* "\"" >
-| < DIGITO : ["0"-"9"] >
-| < LETRA: ["a"-"z","A"-"Z"] >
+  < IDENTIFICADOR_INVALIDO: ((<LETRA>)+ ["@","#","$","&","?"] (<LETRA> | <DIGITO> | "_")*) | ((<DIGITO>)+ (<LETRA>)+ (<LETRA>|<DIGITO>)*)> 
+| < STRING_INVALIDA: "\"" (~["\"","\n","\r"])* ("\n"|"\r"|"\r\n") >
+| < REAL_INVALIDO : (["+","-"])? (<DIGITO>)+ "." ~["0"-"9"] > 
+| < INTEIRO: (["+","-"])? (<DIGITO>)+ >
+| < REAL: (["+","-"])? (<DIGITO>)+ "." (<DIGITO>)+ >
+| < IDENTIFICADOR: <LETRA> (<LETRA> | <DIGITO> | "_")* >
+| < STRING: "\"" (~["\"","\n","\r"])* "\"" >
+| < #DIGITO : ["0"-"9"] >
+| < #LETRA: ["a"-"z","A"-"Z"] >
 }
 
 TOKEN:
 {
-	< CARACTER_ILEGAL: (~[]) >
+    < SIMBOLO_INVALIDO: ~[] >
 }
 
 void processarEntrada():
@@ -165,65 +232,73 @@ void processarEntrada():
   Token t;
 }
 {
-(
-    t = < TOKEN_IF > { inserirToken(reservada, "CONDICIONAL", t.image); }
-|   t = < TOKEN_ELSE > { inserirToken(reservada, "CONDICIONAL", t.image); }
-|   t = < TOKEN_WHILE > { inserirToken(reservada, "REPETICAO", t.image); }
-|   t = < TOKEN_FOR > { inserirToken(reservada, "REPETICAO", t.image); }
-|   t = < TOKEN_VOID > { inserirToken(reservada, "TIPO_DADO", t.image); }
-|   t = < TOKEN_INT > { inserirToken(reservada, "TIPO_DADO", t.image); }
-|   t = < TOKEN_FLOAT > { inserirToken(reservada, "TIPO_DADO", t.image); }
-|   t = < TOKEN_CHAR > { inserirToken(reservada, "TIPO_DADO", t.image); }
-|   t = < TOKEN_BOOL > { inserirToken(reservada, "TIPO_DADO", t.image); }
-|   t = < TOKEN_RETURN > { inserirToken(reservada, "RETORNO", t.image); }
-|   t = < TOKEN_TRUE > { inserirToken(reservada, "VALOR_BOOLEANO", t.image); }
-|   t = < TOKEN_FALSE > { inserirToken(reservada, "VALOR_BOOLEANO", t.image); }
-| 	t = < TOKEN_DOUBLE > { inserirToken(reservada, "TIPO_DADO", t.image); }
-| 	t = < TOKEN_SWITCH > { inserirToken(reservada, "CONDICIONAL", t.image); }
-| 	t = < TOKEN_DO > { inserirToken(reservada, "REPETICAO",	 t.image); }
-| 	t = < TOKEN_TRY > { inserirToken(reservada, "EXCECAO", t.image); }
-| 	t = < TOKEN_EXCEPT > { inserirToken(reservada, "EXCECAO", t.image); }
-| 	t = < TOKEN_IMPORT > { inserirToken(reservada, "IMPORT", t.image); }
+  (
+    t = < TOKEN_IF > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
+  | t = < TOKEN_ELSE > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
+  | t = < TOKEN_WHILE > { inserirTokenUnico(reservada, "REPETICAO", t); }
+  | t = < TOKEN_FOR > { inserirTokenUnico(reservada, "REPETICAO", t); }
+  | t = < TOKEN_VOID > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_INT > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_FLOAT > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_CHAR > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_BOOL > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_RETURN > { inserirTokenUnico(reservada, "RETORNO", t); }
+  | t = < TOKEN_TRUE > { inserirTokenUnico(reservada, "VALOR_BOOLEANO", t); }
+  | t = < TOKEN_FALSE > { inserirTokenUnico(reservada, "VALOR_BOOLEANO", t); }
+  | t = < TOKEN_DOUBLE > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_SWITCH > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
+  | t = < TOKEN_DO > { inserirTokenUnico(reservada, "REPETICAO",   t); }
+  | t = < TOKEN_TRY > { inserirTokenUnico(reservada, "EXCECAO", t); }
+  | t = < TOKEN_EXCEPT > { inserirTokenUnico(reservada, "EXCECAO", t); }
+  | t = < TOKEN_IMPORT > { inserirTokenUnico(reservada, "IMPORT", t); }
 
-|   t = < ADICAO > { inserirToken(reservada, "OPERADOR_ADICAO", t.image); }
-| 	t = < SUBTRACAO > { inserirToken(reservada, "OPERADOR_SUBTRACAO", t.image); }
-| 	t = < MULTIPLICACAO > { inserirToken(reservada, "OPERADOR_MULTIPLICACAO", t.image); }
-| 	t = < DIVISAO > { inserirToken(reservada, "OPERADOR_DIVISAO", t.image); }
-| 	t = < ATRIBUICAO > { inserirToken(reservada, "OPERADOR_ATRIBUICAO", t.image); }
-| 	t = < MODULO > { inserirToken(reservada, "OPERADOR_MODULO", t.image); }
-| 	t = < IGUAL > { inserirToken(reservada, "OPERADOR_IGUAL", t.image); }
-| 	t = < DIFERENTE > { inserirToken(reservada, "OPERADOR_DIFERENTE", t.image); }
-| 	t = < MENOR > { inserirToken(reservada, "OPERADOR_MENOR", t.image); }
-| 	t = < MAIOR > { inserirToken(reservada, "OPERADOR_MAIOR", t.image); }
-| 	t = < MAIOR_IGUAL > { inserirToken(reservada, "OPERADOR_MAIOR_IGUAL", t.image); }
-| 	t = < MENOR_IGUAL > { inserirToken(reservada, "OPERADOR_MENOR_IGUAL", t.image); }
-| 	t = < AND > { inserirToken(reservada, "OPERADOR_AND", t.image); }
-| 	t = < NOT > { inserirToken(reservada, "OPERADOR_NOT", t.image); }
-| 	t = < OR > { inserirToken(reservada, "OPERADOR_OR", t.image); }
-| 	t = < INCREMENTO > { inserirToken(reservada, "OPERADOR_INCREMENTO", t.image); }
-| 	t = < DECREMENTO > { inserirToken(reservada, "OPERADOR_DECREMENTO", t.image); }
-| 	t = < SOMA_ATRIBUICAO > { inserirToken(reservada, "SOMA_ATRIBUICAO", t.image); }
-| 	t = < SUBTRACAO_ATRIBUICAO > { inserirToken(reservada, "SUBTRACAO_ATRIBUICAO", t.image); }
-| 	t = < MULTIPLICACAO_ATRIBUICAO > { inserirToken(reservada, "MULTIPLICACAO_ATRIBUICAO", t.image); }
-| 	t = < DIVISAO_ATRIBUICAO > { inserirToken(reservada, "DIVISAO_ATRIBUICAO", t.image); }
-| 	t = < MODULO_ATRIBUICAO > { inserirToken(reservada, "MODULO_ATRIBUICAO", t.image); }
+  | t = < ADICAO > { inserirTokenUnico(reservada, "OPERADOR_ADICAO", t); }
+  | t = < SUBTRACAO > { inserirTokenUnico(reservada, "OPERADOR_SUBTRACAO", t); }
+  | t = < MULTIPLICACAO > { inserirTokenUnico(reservada, "OPERADOR_MULTIPLICACAO", t); }
+  | t = < DIVISAO > { inserirTokenUnico(reservada, "OPERADOR_DIVISAO", t); }
+  | t = < ATRIBUICAO > { inserirTokenUnico(reservada, "OPERADOR_ATRIBUICAO", t); }
+  | t = < MODULO > { inserirTokenUnico(reservada, "OPERADOR_MODULO", t); }
+  | t = < IGUAL > { inserirTokenUnico(reservada, "OPERADOR_IGUAL", t); }
+  | t = < DIFERENTE > { inserirTokenUnico(reservada, "OPERADOR_DIFERENTE", t); }
+  | t = < MENOR > { inserirTokenUnico(reservada, "OPERADOR_MENOR", t); }
+  | t = < MAIOR > { inserirTokenUnico(reservada, "OPERADOR_MAIOR", t); }
+  | t = < MAIOR_IGUAL > { inserirTokenUnico(reservada, "OPERADOR_MAIOR_IGUAL", t); }
+  | t = < MENOR_IGUAL > { inserirTokenUnico(reservada, "OPERADOR_MENOR_IGUAL", t); }
+  | t = < AND > { inserirTokenUnico(reservada, "OPERADOR_AND", t); }
+  | t = < NOT > { inserirTokenUnico(reservada, "OPERADOR_NOT", t); }
+  | t = < OR > { inserirTokenUnico(reservada, "OPERADOR_OR", t); }
+  | t = < INCREMENTO > { inserirTokenUnico(reservada, "OPERADOR_INCREMENTO", t); }
+  | t = < DECREMENTO > { inserirTokenUnico(reservada, "OPERADOR_DECREMENTO", t); }
+  | t = < SOMA_ATRIBUICAO > { inserirTokenUnico(reservada, "SOMA_ATRIBUICAO", t); }
+  | t = < SUBTRACAO_ATRIBUICAO > { inserirTokenUnico(reservada, "SUBTRACAO_ATRIBUICAO", t); }
+  | t = < MULTIPLICACAO_ATRIBUICAO > { inserirTokenUnico(reservada, "MULTIPLICACAO_ATRIBUICAO", t); }
+  | t = < DIVISAO_ATRIBUICAO > { inserirTokenUnico(reservada, "DIVISAO_ATRIBUICAO", t); }
+  | t = < MODULO_ATRIBUICAO > { inserirTokenUnico(reservada, "MODULO_ATRIBUICAO", t); }
 
-| 	t = < PONTO_VIRGULA > { inserirToken(reservada, "SEPARADOR_PONTO_VIRGULA", t.image); }
-| 	t = < VIRGULA > { inserirToken(reservada, "SEPARADOR_VIRGULA", t.image); }
-| 	t = < PONTO > { inserirToken(reservada, "SEPARADOR_PONTO", t.image); }
-| 	t = < ABRE_CHAVES > { inserirToken(reservada, "SEPARADOR_ABRE_CHAVES", t.image); }
-| 	t = < FECHA_CHAVES > { inserirToken(reservada, "SEPARADOR_FECHA_CHAVES", t.image); }
-| 	t = < ABRE_PARENTESIS > { inserirToken(reservada, "SEPARADOR_ABRE_PARENTESIS", t.image); }
-| 	t = < FECHA_PARENTESIS > { inserirToken(reservada, "SEPARADOR_FECHA_PARENTESIS", t.image); }
-| 	t = < ABRE_COLCHETES > { inserirToken(reservada, "SEPARADOR_ABRE_COLCHETES", t.image); }
-| 	t = < FECHA_COLCHETES > { inserirToken(reservada, "SEPARADOR_FECHA_COLCHETES", t.image); }
+  | t = < PONTO_VIRGULA > { inserirTokenUnico(reservada, "SEPARADOR_PONTO_VIRGULA", t); }
+  | t = < VIRGULA > { inserirTokenUnico(reservada, "SEPARADOR_VIRGULA", t); }
+  | t = < PONTO > { inserirTokenUnico(reservada, "SEPARADOR_PONTO", t); }
+  | t = < ABRE_CHAVES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_CHAVES", t); }
+  | t = < FECHA_CHAVES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_CHAVES", t); }
+  | t = < ABRE_PARENTESIS > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_PARENTESIS", t); }
+  | t = < FECHA_PARENTESIS > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_PARENTESIS", t); }
+  | t = < ABRE_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_COLCHETES", t); }
+  | t = < FECHA_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_COLCHETES", t); }
 
-| 	t = < INTEIRO > { inserirToken(simbolo, "CONSTANTE_INTEIRA", t.image); }
-| 	t = < REAL > { inserirToken(simbolo, "CONSTANTE_REAL", t.image); }
-| 	t = < IDENTIFICADOR > { inserirToken(simbolo, "IDENTIFICADOR", t.image); }
-| 	t = < CARACTER_ILEGAL > { inserirToken(simbolo, "CARACTER_ILEGAL", t.image); }
-| 	t = < STRING > { inserirToken(simbolo, "STRING_LITERAL", t.image); })*
-< EOF >
+  | t = < IDENTIFICADOR_INVALIDO > { inserirErro("IDENTIFICADOR_INVALIDO", t); }
+  | t = < STRING_INVALIDA > { inserirErro("STRING_INVALIDA", t); }
+  | t = < REAL_INVALIDO > { inserirErro("REAL_INVALIDO", t); }
+  | t = < INTEIRO > { inserirTokenUnico(simbolo, "CONSTANTE_INTEIRA", t); }
+  | t = < REAL > { inserirTokenUnico(simbolo, "CONSTANTE_REAL", t); }
+  | t = < IDENTIFICADOR > {
+      if (t.image.length() > MAX) {
+          inserirErro("IDENTIFICADOR_LONGO", t);
+      } else {
+          inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+      }
+    }
+  | t = < STRING > { inserirTokenUnico(simbolo, "STRING_LITERAL", t); }
+  | t = < SIMBOLO_INVALIDO > { inserirErro("ERRO_SIMBOLO_INVALIDO", t); }
+  )*
+  < EOF >
 }
-
-
