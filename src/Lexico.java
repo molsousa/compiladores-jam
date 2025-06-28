@@ -27,7 +27,6 @@ class InfoToken {
 public class Lexico implements LexicoConstants {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
-    public static LinkedList<InfoToken> erros = new LinkedList<>();
 
     private static final int MAX = 32;
 
@@ -67,12 +66,6 @@ public class Lexico implements LexicoConstants {
                                 System.out.println("\n---CONSTANTES E IDENTIFICADORES---");
                                 parser.imprimirTokens(simbolo);
                                         break;
-                                case 3:
-                                        if (!erros.isEmpty()) {
-                                    System.out.println("---ERROS L\u00c9XICOS---\n");
-                                    parser.imprimirTokens(erros);
-                                }
-                                break;
                                 case 0:
                                         System.out.println("Obrigado!!");
                                         break;
@@ -99,10 +92,6 @@ public class Lexico implements LexicoConstants {
         l.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
     }
 
-    public void inserirErro(String tipo, Token t) {
-        erros.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
-    }
-
     public void imprimirTokens(LinkedList<InfoToken> l) {
         if (l.isEmpty()) {
             System.out.println("Lista vazia");
@@ -116,7 +105,6 @@ public class Lexico implements LexicoConstants {
     public static void menu() {
                 System.out.println("1 - Imprimir palavras reservadas");
                 System.out.println("2 - Imprimir s\u00edmbolos");
-                System.out.println("3 - Erros");
                 System.out.println("0 - Sair");
                 System.out.print("Insira uma op\u00e7\u00e3o: ");
     }
@@ -443,17 +431,17 @@ inserirTokenUnico(reservada, "SEPARADOR_FECHA_COLCHETES", t);
         }
       case IDENTIFICADOR_INVALIDO:{
         t = jj_consume_token(IDENTIFICADOR_INVALIDO);
-inserirErro("IDENTIFICADOR_INVALIDO", t);
+System.out.println("IDENTIFICADOR_INVALIDO: " + t.image);
         break;
         }
       case STRING_INVALIDA:{
         t = jj_consume_token(STRING_INVALIDA);
-inserirErro("STRING_INVALIDA", t);
+System.out.println("STRING_INVALIDA: "+ t.image);
         break;
         }
       case REAL_INVALIDO:{
         t = jj_consume_token(REAL_INVALIDO);
-inserirErro("REAL_INVALIDO", t);
+System.out.println("REAL_INVALIDO: "+ t.image);
         break;
         }
       case INTEIRO:{
@@ -469,7 +457,7 @@ inserirTokenUnico(simbolo, "CONSTANTE_REAL", t);
       case IDENTIFICADOR:{
         t = jj_consume_token(IDENTIFICADOR);
 if (t.image.length() > MAX) {
-          inserirErro("IDENTIFICADOR_LONGO", t);
+          System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
       } else {
           inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
       }
@@ -482,7 +470,7 @@ inserirTokenUnico(simbolo, "STRING_LITERAL", t);
         }
       case SIMBOLO_INVALIDO:{
         t = jj_consume_token(SIMBOLO_INVALIDO);
-inserirErro("ERRO_SIMBOLO_INVALIDO", t);
+System.out.println("Simbolo invalido: "+ t.image);
         break;
         }
       default:
@@ -506,15 +494,20 @@ inserirErro("ERRO_SIMBOLO_INVALIDO", t);
   final private int[] jj_la1 = new int[2];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
+  static private int[] jj_la1_2;
   static {
 	   jj_la1_init_0();
 	   jj_la1_init_1();
+	   jj_la1_init_2();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0xffffffe0,0xffffffe0,};
+	   jj_la1_0 = new int[] {0xffffff80,0xffffff80,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x9fffffff,0x9fffffff,};
+	   jj_la1_1 = new int[] {0x7fffffff,0x7fffffff,};
+	}
+	private static void jj_la1_init_2() {
+	   jj_la1_2 = new int[] {0x2,0x2,};
 	}
 
   /** Constructor with InputStream. */
@@ -639,7 +632,7 @@ inserirErro("ERRO_SIMBOLO_INVALIDO", t);
   /** Generate ParseException. */
   public ParseException generateParseException() {
 	 jj_expentries.clear();
-	 boolean[] la1tokens = new boolean[64];
+	 boolean[] la1tokens = new boolean[66];
 	 if (jj_kind >= 0) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
@@ -653,10 +646,13 @@ inserirErro("ERRO_SIMBOLO_INVALIDO", t);
 		   if ((jj_la1_1[i] & (1<<j)) != 0) {
 			 la1tokens[32+j] = true;
 		   }
+		   if ((jj_la1_2[i] & (1<<j)) != 0) {
+			 la1tokens[64+j] = true;
+		   }
 		 }
 	   }
 	 }
-	 for (int i = 0; i < 64; i++) {
+	 for (int i = 0; i < 66; i++) {
 	   if (la1tokens[i]) {
 		 jj_expentry = new int[1];
 		 jj_expentry[0] = i;

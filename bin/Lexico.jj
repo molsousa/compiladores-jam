@@ -33,7 +33,6 @@ public class Lexico
 {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
-    public static LinkedList<InfoToken> erros = new LinkedList<>();
 
     private static final int MAX = 32;
 
@@ -73,12 +72,6 @@ public class Lexico
 			        System.out.println("\n---CONSTANTES E IDENTIFICADORES---");
 			        parser.imprimirTokens(simbolo);
 					break;
-				case 3:
-					if (!erros.isEmpty()) {
-			            System.out.println("---ERROS LÉXICOS---\n");
-			            parser.imprimirTokens(erros);
-			        }
-			        break;
 				case 0:
 					System.out.println("Obrigado!!");
 					break;
@@ -104,10 +97,6 @@ public class Lexico
         }
         l.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
     }
-    
-    public void inserirErro(String tipo, Token t) {
-        erros.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
-    }
 
     public void imprimirTokens(LinkedList<InfoToken> l) {
         if (l.isEmpty()) {
@@ -122,7 +111,6 @@ public class Lexico
     public static void menu() {
 		System.out.println("1 - Imprimir palavras reservadas");
 		System.out.println("2 - Imprimir símbolos");
-		System.out.println("3 - Erros");
 		System.out.println("0 - Sair");
 		System.out.print("Insira uma opção: ");
     }
@@ -142,6 +130,8 @@ SKIP :
 | "\r"
 | "\t"
 | "\n"
+| < "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n") >
+| < "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/" > 
 }
 
 // Palavras reservadas
@@ -285,20 +275,20 @@ void processarEntrada():
   | t = < ABRE_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_COLCHETES", t); }
   | t = < FECHA_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_COLCHETES", t); }
 
-  | t = < IDENTIFICADOR_INVALIDO > { inserirErro("IDENTIFICADOR_INVALIDO", t); }
-  | t = < STRING_INVALIDA > { inserirErro("STRING_INVALIDA", t); }
-  | t = < REAL_INVALIDO > { inserirErro("REAL_INVALIDO", t); }
+  | t = < IDENTIFICADOR_INVALIDO > { System.out.println("IDENTIFICADOR_INVALIDO: " + t.image); }
+  | t = < STRING_INVALIDA > { System.out.println("STRING_INVALIDA: "+ t.image); }
+  | t = < REAL_INVALIDO > { System.out.println("REAL_INVALIDO: "+ t.image); }
   | t = < INTEIRO > { inserirTokenUnico(simbolo, "CONSTANTE_INTEIRA", t); }
   | t = < REAL > { inserirTokenUnico(simbolo, "CONSTANTE_REAL", t); }
   | t = < IDENTIFICADOR > {
       if (t.image.length() > MAX) {
-          inserirErro("IDENTIFICADOR_LONGO", t);
+          System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
       } else {
           inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
       }
     }
   | t = < STRING > { inserirTokenUnico(simbolo, "STRING_LITERAL", t); }
-  | t = < SIMBOLO_INVALIDO > { inserirErro("ERRO_SIMBOLO_INVALIDO", t); }
+  | t = < SIMBOLO_INVALIDO > { System.out.println("Simbolo invalido: "+ t.image); }
   )*
   < EOF >
 }

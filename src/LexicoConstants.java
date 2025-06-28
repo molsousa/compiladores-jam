@@ -9,123 +9,123 @@ public interface LexicoConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int TOKEN_IF = 5;
+  int TOKEN_IF = 7;
   /** RegularExpression Id. */
-  int TOKEN_ELSE = 6;
+  int TOKEN_ELSE = 8;
   /** RegularExpression Id. */
-  int TOKEN_WHILE = 7;
+  int TOKEN_WHILE = 9;
   /** RegularExpression Id. */
-  int TOKEN_FOR = 8;
+  int TOKEN_FOR = 10;
   /** RegularExpression Id. */
-  int TOKEN_VOID = 9;
+  int TOKEN_VOID = 11;
   /** RegularExpression Id. */
-  int TOKEN_INT = 10;
+  int TOKEN_INT = 12;
   /** RegularExpression Id. */
-  int TOKEN_FLOAT = 11;
+  int TOKEN_FLOAT = 13;
   /** RegularExpression Id. */
-  int TOKEN_CHAR = 12;
+  int TOKEN_CHAR = 14;
   /** RegularExpression Id. */
-  int TOKEN_BOOL = 13;
+  int TOKEN_BOOL = 15;
   /** RegularExpression Id. */
-  int TOKEN_RETURN = 14;
+  int TOKEN_RETURN = 16;
   /** RegularExpression Id. */
-  int TOKEN_TRUE = 15;
+  int TOKEN_TRUE = 17;
   /** RegularExpression Id. */
-  int TOKEN_FALSE = 16;
+  int TOKEN_FALSE = 18;
   /** RegularExpression Id. */
-  int TOKEN_DOUBLE = 17;
+  int TOKEN_DOUBLE = 19;
   /** RegularExpression Id. */
-  int TOKEN_SWITCH = 18;
+  int TOKEN_SWITCH = 20;
   /** RegularExpression Id. */
-  int TOKEN_DO = 19;
+  int TOKEN_DO = 21;
   /** RegularExpression Id. */
-  int TOKEN_TRY = 20;
+  int TOKEN_TRY = 22;
   /** RegularExpression Id. */
-  int TOKEN_EXCEPT = 21;
+  int TOKEN_EXCEPT = 23;
   /** RegularExpression Id. */
-  int TOKEN_IMPORT = 22;
+  int TOKEN_IMPORT = 24;
   /** RegularExpression Id. */
-  int ADICAO = 23;
+  int ADICAO = 25;
   /** RegularExpression Id. */
-  int SUBTRACAO = 24;
+  int SUBTRACAO = 26;
   /** RegularExpression Id. */
-  int MULTIPLICACAO = 25;
+  int MULTIPLICACAO = 27;
   /** RegularExpression Id. */
-  int DIVISAO = 26;
+  int DIVISAO = 28;
   /** RegularExpression Id. */
-  int ATRIBUICAO = 27;
+  int ATRIBUICAO = 29;
   /** RegularExpression Id. */
-  int MODULO = 28;
+  int MODULO = 30;
   /** RegularExpression Id. */
-  int IGUAL = 29;
+  int IGUAL = 31;
   /** RegularExpression Id. */
-  int DIFERENTE = 30;
+  int DIFERENTE = 32;
   /** RegularExpression Id. */
-  int MENOR = 31;
+  int MENOR = 33;
   /** RegularExpression Id. */
-  int MAIOR = 32;
+  int MAIOR = 34;
   /** RegularExpression Id. */
-  int MAIOR_IGUAL = 33;
+  int MAIOR_IGUAL = 35;
   /** RegularExpression Id. */
-  int MENOR_IGUAL = 34;
+  int MENOR_IGUAL = 36;
   /** RegularExpression Id. */
-  int AND = 35;
+  int AND = 37;
   /** RegularExpression Id. */
-  int NOT = 36;
+  int NOT = 38;
   /** RegularExpression Id. */
-  int OR = 37;
+  int OR = 39;
   /** RegularExpression Id. */
-  int INCREMENTO = 38;
+  int INCREMENTO = 40;
   /** RegularExpression Id. */
-  int DECREMENTO = 39;
+  int DECREMENTO = 41;
   /** RegularExpression Id. */
-  int SOMA_ATRIBUICAO = 40;
+  int SOMA_ATRIBUICAO = 42;
   /** RegularExpression Id. */
-  int SUBTRACAO_ATRIBUICAO = 41;
+  int SUBTRACAO_ATRIBUICAO = 43;
   /** RegularExpression Id. */
-  int MULTIPLICACAO_ATRIBUICAO = 42;
+  int MULTIPLICACAO_ATRIBUICAO = 44;
   /** RegularExpression Id. */
-  int DIVISAO_ATRIBUICAO = 43;
+  int DIVISAO_ATRIBUICAO = 45;
   /** RegularExpression Id. */
-  int MODULO_ATRIBUICAO = 44;
+  int MODULO_ATRIBUICAO = 46;
   /** RegularExpression Id. */
-  int PONTO_VIRGULA = 45;
+  int PONTO_VIRGULA = 47;
   /** RegularExpression Id. */
-  int VIRGULA = 46;
+  int VIRGULA = 48;
   /** RegularExpression Id. */
-  int PONTO = 47;
+  int PONTO = 49;
   /** RegularExpression Id. */
-  int ABRE_CHAVES = 48;
+  int ABRE_CHAVES = 50;
   /** RegularExpression Id. */
-  int FECHA_CHAVES = 49;
+  int FECHA_CHAVES = 51;
   /** RegularExpression Id. */
-  int ABRE_PARENTESIS = 50;
+  int ABRE_PARENTESIS = 52;
   /** RegularExpression Id. */
-  int FECHA_PARENTESIS = 51;
+  int FECHA_PARENTESIS = 53;
   /** RegularExpression Id. */
-  int ABRE_COLCHETES = 52;
+  int ABRE_COLCHETES = 54;
   /** RegularExpression Id. */
-  int FECHA_COLCHETES = 53;
+  int FECHA_COLCHETES = 55;
   /** RegularExpression Id. */
-  int IDENTIFICADOR_INVALIDO = 54;
+  int IDENTIFICADOR_INVALIDO = 56;
   /** RegularExpression Id. */
-  int STRING_INVALIDA = 55;
+  int STRING_INVALIDA = 57;
   /** RegularExpression Id. */
-  int REAL_INVALIDO = 56;
+  int REAL_INVALIDO = 58;
   /** RegularExpression Id. */
-  int INTEIRO = 57;
+  int INTEIRO = 59;
   /** RegularExpression Id. */
-  int REAL = 58;
+  int REAL = 60;
   /** RegularExpression Id. */
-  int IDENTIFICADOR = 59;
+  int IDENTIFICADOR = 61;
   /** RegularExpression Id. */
-  int STRING = 60;
+  int STRING = 62;
   /** RegularExpression Id. */
-  int DIGITO = 61;
+  int DIGITO = 63;
   /** RegularExpression Id. */
-  int LETRA = 62;
+  int LETRA = 64;
   /** RegularExpression Id. */
-  int SIMBOLO_INVALIDO = 63;
+  int SIMBOLO_INVALIDO = 65;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -137,6 +137,8 @@ public interface LexicoConstants {
     "\"\\r\"",
     "\"\\t\"",
     "\"\\n\"",
+    "<token of kind 5>",
+    "<token of kind 6>",
     "\"if\"",
     "\"else\"",
     "\"while\"",
