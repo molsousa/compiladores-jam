@@ -5,3 +5,14 @@
 /SimpleCharStream.java
 /Token.java
 /TokenMgrError.java
+/.gitignore
+/InfoToken.class
+/Lexico.class
+/Lexico.jj
+/LexicoConstants.class
+/LexicoTokenManager.class
+/ParseException.class
+/SimpleCharStream.class
+/Token.class
+/TokenMgrError.class
+/Sintatico.jj

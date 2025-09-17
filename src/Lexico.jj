@@ -33,21 +33,15 @@ public class Lexico
 {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
-
     private static final int MAX = 32;
 
     public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
         Lexico parser;
         FileInputStream arquivo;
         Scanner scanner = new Scanner(System.in);
-		String nomeArquivo;
-		int opcao;
-
-		System.out.print("Insira o nome do arquivo: ");
-        nomeArquivo = scanner.nextLine();
 
         try {
-            arquivo = new FileInputStream(nomeArquivo);
+            arquivo = new FileInputStream("fonte_1.txt");
         }
         catch(FileNotFoundException e) {
             System.out.println(e);
@@ -56,8 +50,8 @@ public class Lexico
 
         try {
             parser = new Lexico(arquivo);
-            parser.processarEntrada();
-            
+            //parser.processarEntrada();
+            /*
 			do {
 				menu();
 				opcao = scanner.nextInt();
@@ -77,6 +71,8 @@ public class Lexico
 					break;
 				}
 			}while(opcao != 0);
+			*/
+			parser.inicializar_programa();
 		}
         
 		catch(ParseException e) {
@@ -85,6 +81,7 @@ public class Lexico
         catch(TokenMgrError e) {
             System.out.println(e);
         }
+
         
         scanner.close();
     }
@@ -198,25 +195,36 @@ TOKEN:
 |   < FECHA_COLCHETES: "]" >
 }
 
-// Tabela de simbolos e erros
-TOKEN :
+// Tabela de simbolos
+TOKEN:
+{
+  < INTEIRO: (<DIGITO>)+ >
+| < REAL: (<DIGITO>)+ "." (<DIGITO>)+ >
+| < IDENTIFICADOR: <LETRA> (<LETRA> | <DIGITO> | "_")* >
+}
+
+// Erros identificados
+TOKEN:
 {
   < IDENTIFICADOR_INVALIDO: ((<LETRA>)+ ["@","#","$","&","?"] (<LETRA> | <DIGITO> | "_")*) | ((<DIGITO>)+ (<LETRA>)+ (<LETRA>|<DIGITO>)*)> 
 | < STRING_INVALIDA: "\"" (~["\"","\n","\r"])* ("\n"|"\r"|"\r\n") >
 | < REAL_INVALIDO : (["+","-"])? (<DIGITO>)+ "." ~["0"-"9"] > 
-| < INTEIRO: (["+","-"])? (<DIGITO>)+ >
-| < REAL: (["+","-"])? (<DIGITO>)+ "." (<DIGITO>)+ >
-| < IDENTIFICADOR: <LETRA> (<LETRA> | <DIGITO> | "_")* >
 | < STRING: "\"" (~["\"","\n","\r"])* "\"" >
-| < #DIGITO : ["0"-"9"] >
+}
+
+// Simbolos base
+TOKEN:
+{
+  < #DIGITO : ["0"-"9"] >
 | < #LETRA: ["a"-"z","A"-"Z"] >
 }
 
+// Qualquer outro erro
 TOKEN:
 {
     < SIMBOLO_INVALIDO: ~[] >
 }
-
+/*
 void processarEntrada():
 {
   Token t;
@@ -291,4 +299,218 @@ void processarEntrada():
   | t = < SIMBOLO_INVALIDO > { System.out.println("Simbolo invalido: "+ t.image); }
   )*
   < EOF >
+}
+*/
+
+// Funções para operações matemáticas
+int operacao():
+{
+	int resultado;
+}
+{
+	resultado = exp() < PONTO_VIRGULA > { return resultado; }
+| 	< EOF >
+}
+
+int exp():
+{
+	int resultado, op;
+}
+{
+	resultado = termo()
+(	< ADICAO > op = termo()     { resultado = resultado + op; }
+| 	< SUBTRACAO > op = termo()  { resultado = resultado - op; }
+)* 								{ return resultado; } 
+}
+
+int termo():
+{
+	int resultado, op;
+}
+{
+	resultado = unario()
+(  	< MULTIPLICACAO > op = unario() { resultado = resultado * op; }
+|  	< DIVISAO >		  op = unario() { resultado = resultado / op; }
+)* 									{ return resultado; } 
+}
+
+int unario():
+{
+  	int resultado, op;
+}
+{
+(
+	< SUBTRACAO > resultado = fator() { op = -resultado; }
+| 	resultado = fator() 			  { op = resultado; }
+)									  { return resultado; }
+}
+
+int fator():
+{
+	Token t;
+	int resultado;
+}
+{
+(
+	< ABRE_PARENTESIS > resultado = exp() < FECHA_PARENTESIS > {}
+|	t = <INTEIRO> { resultado = Integer.parseInt(t.image);}
+)				  { return resultado; }
+}
+
+// Função para declarar variaveis
+void declarar_variavel():
+{
+      Token t;
+}
+{
+    ( 
+        < TOKEN_INT > { }
+    |   < TOKEN_FLOAT > { }
+    |   < TOKEN_CHAR > { }
+    | 	< TOKEN_BOOL > { }
+    |   < TOKEN_DOUBLE > { }
+  )
+    t = < IDENTIFICADOR > { 
+        if(t.image.length() > MAX){
+            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
+    }
+    ( 
+        < VIRGULA > t = < IDENTIFICADOR > { 
+            if(t.image.length() > MAX){
+                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+            }
+            else{
+                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+            }
+        }
+    )*
+    < PONTO_VIRGULA > { System.out.println("deu declarar certo variável"); }
+}
+
+void chamar_funcao():
+{
+    Token t;
+}
+{
+    t = < IDENTIFICADOR > { 
+        if(t.image.length() > MAX){
+            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
+    }
+    < ABRE_PARENTESIS >
+    ( 
+        ( 
+            < INTEIRO > { }
+        |   < REAL > { }
+        |   < IDENTIFICADOR > { 
+                if(t.image.length() > MAX){ 
+                    System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+                }
+                else{
+                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+                }
+            }
+        )
+        ( 
+            < VIRGULA > 
+            ( 
+                < INTEIRO > { }
+            |   < REAL > { }
+            |   < IDENTIFICADOR > { 
+                    if(t.image.length() > MAX){
+                        System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+                    }
+                    else{
+                        inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+                    }
+                }
+            )
+        )*
+    )?
+    < FECHA_PARENTESIS >
+    < PONTO_VIRGULA > { System.out.println("deu certo chamada de função"); }
+}
+
+void criar_funcoes():
+{
+    Token t;
+}
+{
+    ( 
+        < TOKEN_VOID > { }
+    |   < TOKEN_INT > { }
+    | 	< TOKEN_FLOAT > { }
+    | 	< TOKEN_CHAR > { }
+    | 	< TOKEN_BOOL > { }
+    | 	< TOKEN_DOUBLE > { }
+    )
+    t = < IDENTIFICADOR > { 
+        if(t.image.length() > MAX){
+            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
+    }
+    < ABRE_PARENTESIS >
+    ( 
+        ( 
+            < TOKEN_INT > { }
+        |   < TOKEN_FLOAT > { }
+        |   < TOKEN_CHAR > { }
+        |   < TOKEN_BOOL > { }
+        |   < TOKEN_DOUBLE > { }
+        )
+        t = < IDENTIFICADOR > { 
+            if(t.image.length() > MAX){
+                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+            }
+            else{
+                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+            }
+        }
+        ( 
+            < VIRGULA > 
+            ( 
+                < TOKEN_INT > { }
+            |   < TOKEN_FLOAT > { }
+            |   < TOKEN_CHAR > { }
+            |   < TOKEN_BOOL > { }
+            |   < TOKEN_DOUBLE > { }
+            )
+            t = < IDENTIFICADOR > { 
+                if(t.image.length() > MAX){
+                    System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+                }
+                else{
+                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+                }
+            }
+        )*
+        )?
+        < FECHA_PARENTESIS >
+        < ABRE_CHAVES >
+        (
+        declarar_variavel()
+|       operacao()
+|       chamar_funcao()
+)*
+        < FECHA_CHAVES > { System.out.println("deu certo criar função"); }
+}
+
+// Função para inicializar o programa
+void inicializar_programa():
+{
+}
+{
+	(	criar_funcoes()
+)*
+  < EOF > { System.out.println("Pronto"); }
 }

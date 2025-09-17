@@ -1,13 +1,20 @@
-integer i = 0;
-
-while(i < 5){
-    i++;
+void main()
+{
+	integer x;
+	float y;
+	soma(5, 8);
+	
+	double z;
+	
+	5+4;
 }
 
-/* sadsasadds
-sdasda */
+integer soma(integer a, integer b)
+{
+    
+}
 
-// teste ablubé
-
-
-return i;
+float subtrai(float a, float b)
+{
+    
+}

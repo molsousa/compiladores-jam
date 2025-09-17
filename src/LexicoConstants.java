@@ -107,17 +107,17 @@ public interface LexicoConstants {
   /** RegularExpression Id. */
   int FECHA_COLCHETES = 55;
   /** RegularExpression Id. */
-  int IDENTIFICADOR_INVALIDO = 56;
+  int INTEIRO = 56;
   /** RegularExpression Id. */
-  int STRING_INVALIDA = 57;
+  int REAL = 57;
   /** RegularExpression Id. */
-  int REAL_INVALIDO = 58;
+  int IDENTIFICADOR = 58;
   /** RegularExpression Id. */
-  int INTEIRO = 59;
+  int IDENTIFICADOR_INVALIDO = 59;
   /** RegularExpression Id. */
-  int REAL = 60;
+  int STRING_INVALIDA = 60;
   /** RegularExpression Id. */
-  int IDENTIFICADOR = 61;
+  int REAL_INVALIDO = 61;
   /** RegularExpression Id. */
   int STRING = 62;
   /** RegularExpression Id. */
@@ -188,12 +188,12 @@ public interface LexicoConstants {
     "\")\"",
     "\"[\"",
     "\"]\"",
-    "<IDENTIFICADOR_INVALIDO>",
-    "<STRING_INVALIDA>",
-    "<REAL_INVALIDO>",
     "<INTEIRO>",
     "<REAL>",
     "<IDENTIFICADOR>",
+    "<IDENTIFICADOR_INVALIDO>",
+    "<STRING_INVALIDA>",
+    "<REAL_INVALIDO>",
     "<STRING>",
     "<DIGITO>",
     "<LETRA>",

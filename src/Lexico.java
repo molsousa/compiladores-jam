@@ -27,21 +27,15 @@ class InfoToken {
 public class Lexico implements LexicoConstants {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
-
     private static final int MAX = 32;
 
     public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
         Lexico parser;
         FileInputStream arquivo;
         Scanner scanner = new Scanner(System.in);
-                String nomeArquivo;
-                int opcao;
-
-                System.out.print("Insira o nome do arquivo: ");
-        nomeArquivo = scanner.nextLine();
 
         try {
-            arquivo = new FileInputStream(nomeArquivo);
+            arquivo = new FileInputStream("fonte_1.txt");
         }
         catch(FileNotFoundException e) {
             System.out.println(e);
@@ -50,27 +44,29 @@ public class Lexico implements LexicoConstants {
 
         try {
             parser = new Lexico(arquivo);
-            parser.processarEntrada();
-
-                        do {
-                                menu();
-                                opcao = scanner.nextInt();
-                                buffer(scanner);
-
-                                switch(opcao) {
-                            case 1:
-                                System.out.println("\n---PALAVRAS RESERVADAS E OPERADORES---");
-                                parser.imprimirTokens(reservada);
-                                break;
-                            case 2:
-                                System.out.println("\n---CONSTANTES E IDENTIFICADORES---");
-                                parser.imprimirTokens(simbolo);
-                                        break;
-                                case 0:
-                                        System.out.println("Obrigado!!");
-                                        break;
-                                }
-                        }while(opcao != 0);
+            //parser.processarEntrada();
+            /*
+			do {
+				menu();
+				opcao = scanner.nextInt();
+				buffer(scanner);
+	
+				switch(opcao) {
+			    case 1:
+			        System.out.println("\n---PALAVRAS RESERVADAS E OPERADORES---");
+			        parser.imprimirTokens(reservada);
+			        break;
+			    case 2:
+			        System.out.println("\n---CONSTANTES E IDENTIFICADORES---");
+			        parser.imprimirTokens(simbolo);
+					break;
+				case 0:
+					System.out.println("Obrigado!!");
+					break;
+				}
+			}while(opcao != 0);
+			*/
+                        parser.inicializar_programa();
                 }
 
                 catch(ParseException e) {
@@ -79,6 +75,7 @@ public class Lexico implements LexicoConstants {
         catch(TokenMgrError e) {
             System.out.println(e);
         }
+
 
         scanner.close();
     }
@@ -115,371 +112,601 @@ public class Lexico implements LexicoConstants {
                 }
     }
 
-  final public void processarEntrada() throws ParseException {Token t;
+/*
+void processarEntrada():
+{
+  Token t;
+}
+{
+  (
+    t = < TOKEN_IF > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
+  | t = < TOKEN_ELSE > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
+  | t = < TOKEN_WHILE > { inserirTokenUnico(reservada, "REPETICAO", t); }
+  | t = < TOKEN_FOR > { inserirTokenUnico(reservada, "REPETICAO", t); }
+  | t = < TOKEN_VOID > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_INT > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_FLOAT > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_CHAR > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_BOOL > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_RETURN > { inserirTokenUnico(reservada, "RETORNO", t); }
+  | t = < TOKEN_TRUE > { inserirTokenUnico(reservada, "VALOR_BOOLEANO", t); }
+  | t = < TOKEN_FALSE > { inserirTokenUnico(reservada, "VALOR_BOOLEANO", t); }
+  | t = < TOKEN_DOUBLE > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
+  | t = < TOKEN_SWITCH > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
+  | t = < TOKEN_DO > { inserirTokenUnico(reservada, "REPETICAO",   t); }
+  | t = < TOKEN_TRY > { inserirTokenUnico(reservada, "EXCECAO", t); }
+  | t = < TOKEN_EXCEPT > { inserirTokenUnico(reservada, "EXCECAO", t); }
+  | t = < TOKEN_IMPORT > { inserirTokenUnico(reservada, "IMPORT", t); }
+
+  | t = < ADICAO > { inserirTokenUnico(reservada, "OPERADOR_ADICAO", t); }
+  | t = < SUBTRACAO > { inserirTokenUnico(reservada, "OPERADOR_SUBTRACAO", t); }
+  | t = < MULTIPLICACAO > { inserirTokenUnico(reservada, "OPERADOR_MULTIPLICACAO", t); }
+  | t = < DIVISAO > { inserirTokenUnico(reservada, "OPERADOR_DIVISAO", t); }
+  | t = < ATRIBUICAO > { inserirTokenUnico(reservada, "OPERADOR_ATRIBUICAO", t); }
+  | t = < MODULO > { inserirTokenUnico(reservada, "OPERADOR_MODULO", t); }
+  | t = < IGUAL > { inserirTokenUnico(reservada, "OPERADOR_IGUAL", t); }
+  | t = < DIFERENTE > { inserirTokenUnico(reservada, "OPERADOR_DIFERENTE", t); }
+  | t = < MENOR > { inserirTokenUnico(reservada, "OPERADOR_MENOR", t); }
+  | t = < MAIOR > { inserirTokenUnico(reservada, "OPERADOR_MAIOR", t); }
+  | t = < MAIOR_IGUAL > { inserirTokenUnico(reservada, "OPERADOR_MAIOR_IGUAL", t); }
+  | t = < MENOR_IGUAL > { inserirTokenUnico(reservada, "OPERADOR_MENOR_IGUAL", t); }
+  | t = < AND > { inserirTokenUnico(reservada, "OPERADOR_AND", t); }
+  | t = < NOT > { inserirTokenUnico(reservada, "OPERADOR_NOT", t); }
+  | t = < OR > { inserirTokenUnico(reservada, "OPERADOR_OR", t); }
+  | t = < INCREMENTO > { inserirTokenUnico(reservada, "OPERADOR_INCREMENTO", t); }
+  | t = < DECREMENTO > { inserirTokenUnico(reservada, "OPERADOR_DECREMENTO", t); }
+  | t = < SOMA_ATRIBUICAO > { inserirTokenUnico(reservada, "SOMA_ATRIBUICAO", t); }
+  | t = < SUBTRACAO_ATRIBUICAO > { inserirTokenUnico(reservada, "SUBTRACAO_ATRIBUICAO", t); }
+  | t = < MULTIPLICACAO_ATRIBUICAO > { inserirTokenUnico(reservada, "MULTIPLICACAO_ATRIBUICAO", t); }
+  | t = < DIVISAO_ATRIBUICAO > { inserirTokenUnico(reservada, "DIVISAO_ATRIBUICAO", t); }
+  | t = < MODULO_ATRIBUICAO > { inserirTokenUnico(reservada, "MODULO_ATRIBUICAO", t); }
+
+  | t = < PONTO_VIRGULA > { inserirTokenUnico(reservada, "SEPARADOR_PONTO_VIRGULA", t); }
+  | t = < VIRGULA > { inserirTokenUnico(reservada, "SEPARADOR_VIRGULA", t); }
+  | t = < PONTO > { inserirTokenUnico(reservada, "SEPARADOR_PONTO", t); }
+  | t = < ABRE_CHAVES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_CHAVES", t); }
+  | t = < FECHA_CHAVES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_CHAVES", t); }
+  | t = < ABRE_PARENTESIS > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_PARENTESIS", t); }
+  | t = < FECHA_PARENTESIS > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_PARENTESIS", t); }
+  | t = < ABRE_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_COLCHETES", t); }
+  | t = < FECHA_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_COLCHETES", t); }
+
+  | t = < IDENTIFICADOR_INVALIDO > { System.out.println("IDENTIFICADOR_INVALIDO: " + t.image); }
+  | t = < STRING_INVALIDA > { System.out.println("STRING_INVALIDA: "+ t.image); }
+  | t = < REAL_INVALIDO > { System.out.println("REAL_INVALIDO: "+ t.image); }
+  | t = < INTEIRO > { inserirTokenUnico(simbolo, "CONSTANTE_INTEIRA", t); }
+  | t = < REAL > { inserirTokenUnico(simbolo, "CONSTANTE_REAL", t); }
+  | t = < IDENTIFICADOR > {
+      if (t.image.length() > MAX) {
+          System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+      } else {
+          inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+      }
+    }
+  | t = < STRING > { inserirTokenUnico(simbolo, "STRING_LITERAL", t); }
+  | t = < SIMBOLO_INVALIDO > { System.out.println("Simbolo invalido: "+ t.image); }
+  )*
+  < EOF >
+}
+*/
+
+// Funções para operações matemáticas
+  final public int operacao() throws ParseException {int resultado;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case SUBTRACAO:
+    case ABRE_PARENTESIS:
+    case INTEIRO:{
+      resultado = exp();
+      jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return resultado;}
+      break;
+      }
+    case 0:{
+      jj_consume_token(0);
+      break;
+      }
+    default:
+      jj_la1[0] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    throw new Error("Missing return statement in function");
+}
+
+  final public int exp() throws ParseException {int resultado, op;
+    resultado = termo();
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case TOKEN_IF:
-      case TOKEN_ELSE:
-      case TOKEN_WHILE:
-      case TOKEN_FOR:
+      case ADICAO:
+      case SUBTRACAO:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[1] = jj_gen;
+        break label_1;
+      }
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case ADICAO:{
+        jj_consume_token(ADICAO);
+        op = termo();
+resultado = resultado + op;
+        break;
+        }
+      case SUBTRACAO:{
+        jj_consume_token(SUBTRACAO);
+        op = termo();
+resultado = resultado - op;
+        break;
+        }
+      default:
+        jj_la1[2] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+{if ("" != null) return resultado;}
+    throw new Error("Missing return statement in function");
+}
+
+  final public int termo() throws ParseException {int resultado, op;
+    resultado = unario();
+    label_2:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case MULTIPLICACAO:
+      case DIVISAO:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[3] = jj_gen;
+        break label_2;
+      }
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case MULTIPLICACAO:{
+        jj_consume_token(MULTIPLICACAO);
+        op = unario();
+resultado = resultado * op;
+        break;
+        }
+      case DIVISAO:{
+        jj_consume_token(DIVISAO);
+        op = unario();
+resultado = resultado / op;
+        break;
+        }
+      default:
+        jj_la1[4] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+{if ("" != null) return resultado;}
+    throw new Error("Missing return statement in function");
+}
+
+  final public int unario() throws ParseException {int resultado, op;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case SUBTRACAO:{
+      jj_consume_token(SUBTRACAO);
+      resultado = fator();
+op = -resultado;
+      break;
+      }
+    case ABRE_PARENTESIS:
+    case INTEIRO:{
+      resultado = fator();
+op = resultado;
+      break;
+      }
+    default:
+      jj_la1[5] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+{if ("" != null) return resultado;}
+    throw new Error("Missing return statement in function");
+}
+
+  final public int fator() throws ParseException {Token t;
+        int resultado;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case ABRE_PARENTESIS:{
+      jj_consume_token(ABRE_PARENTESIS);
+      resultado = exp();
+      jj_consume_token(FECHA_PARENTESIS);
+
+      break;
+      }
+    case INTEIRO:{
+      t = jj_consume_token(INTEIRO);
+resultado = Integer.parseInt(t.image);
+      break;
+      }
+    default:
+      jj_la1[6] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+{if ("" != null) return resultado;}
+    throw new Error("Missing return statement in function");
+}
+
+// Função para declarar variaveis
+  final public void declarar_variavel() throws ParseException {Token t;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case TOKEN_INT:{
+      jj_consume_token(TOKEN_INT);
+
+      break;
+      }
+    case TOKEN_FLOAT:{
+      jj_consume_token(TOKEN_FLOAT);
+
+      break;
+      }
+    case TOKEN_CHAR:{
+      jj_consume_token(TOKEN_CHAR);
+
+      break;
+      }
+    case TOKEN_BOOL:{
+      jj_consume_token(TOKEN_BOOL);
+
+      break;
+      }
+    case TOKEN_DOUBLE:{
+      jj_consume_token(TOKEN_DOUBLE);
+
+      break;
+      }
+    default:
+      jj_la1[7] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    t = jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case VIRGULA:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[8] = jj_gen;
+        break label_3;
+      }
+      jj_consume_token(VIRGULA);
+      t = jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+            }
+            else{
+                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+            }
+    }
+    jj_consume_token(PONTO_VIRGULA);
+System.out.println("deu declarar certo vari\u00e1vel");
+}
+
+  final public void chamar_funcao() throws ParseException {Token t;
+    t = jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
+    jj_consume_token(ABRE_PARENTESIS);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case INTEIRO:
+    case REAL:
+    case IDENTIFICADOR:{
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case INTEIRO:{
+        jj_consume_token(INTEIRO);
+
+        break;
+        }
+      case REAL:{
+        jj_consume_token(REAL);
+
+        break;
+        }
+      case IDENTIFICADOR:{
+        jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+                    System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+                }
+                else{
+                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+                }
+        break;
+        }
+      default:
+        jj_la1[9] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      label_4:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case VIRGULA:{
+          ;
+          break;
+          }
+        default:
+          jj_la1[10] = jj_gen;
+          break label_4;
+        }
+        jj_consume_token(VIRGULA);
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case INTEIRO:{
+          jj_consume_token(INTEIRO);
+
+          break;
+          }
+        case REAL:{
+          jj_consume_token(REAL);
+
+          break;
+          }
+        case IDENTIFICADOR:{
+          jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+                        System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+                    }
+                    else{
+                        inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+                    }
+          break;
+          }
+        default:
+          jj_la1[11] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+      }
+      break;
+      }
+    default:
+      jj_la1[12] = jj_gen;
+      ;
+    }
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(PONTO_VIRGULA);
+System.out.println("deu certo chamada de fun\u00e7\u00e3o");
+}
+
+  final public void criar_funcoes() throws ParseException {Token t;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case TOKEN_VOID:{
+      jj_consume_token(TOKEN_VOID);
+
+      break;
+      }
+    case TOKEN_INT:{
+      jj_consume_token(TOKEN_INT);
+
+      break;
+      }
+    case TOKEN_FLOAT:{
+      jj_consume_token(TOKEN_FLOAT);
+
+      break;
+      }
+    case TOKEN_CHAR:{
+      jj_consume_token(TOKEN_CHAR);
+
+      break;
+      }
+    case TOKEN_BOOL:{
+      jj_consume_token(TOKEN_BOOL);
+
+      break;
+      }
+    case TOKEN_DOUBLE:{
+      jj_consume_token(TOKEN_DOUBLE);
+
+      break;
+      }
+    default:
+      jj_la1[13] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    t = jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
+    jj_consume_token(ABRE_PARENTESIS);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case TOKEN_INT:
+    case TOKEN_FLOAT:
+    case TOKEN_CHAR:
+    case TOKEN_BOOL:
+    case TOKEN_DOUBLE:{
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case TOKEN_INT:{
+        jj_consume_token(TOKEN_INT);
+
+        break;
+        }
+      case TOKEN_FLOAT:{
+        jj_consume_token(TOKEN_FLOAT);
+
+        break;
+        }
+      case TOKEN_CHAR:{
+        jj_consume_token(TOKEN_CHAR);
+
+        break;
+        }
+      case TOKEN_BOOL:{
+        jj_consume_token(TOKEN_BOOL);
+
+        break;
+        }
+      case TOKEN_DOUBLE:{
+        jj_consume_token(TOKEN_DOUBLE);
+
+        break;
+        }
+      default:
+        jj_la1[14] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      t = jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+            }
+            else{
+                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+            }
+      label_5:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case VIRGULA:{
+          ;
+          break;
+          }
+        default:
+          jj_la1[15] = jj_gen;
+          break label_5;
+        }
+        jj_consume_token(VIRGULA);
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case TOKEN_INT:{
+          jj_consume_token(TOKEN_INT);
+
+          break;
+          }
+        case TOKEN_FLOAT:{
+          jj_consume_token(TOKEN_FLOAT);
+
+          break;
+          }
+        case TOKEN_CHAR:{
+          jj_consume_token(TOKEN_CHAR);
+
+          break;
+          }
+        case TOKEN_BOOL:{
+          jj_consume_token(TOKEN_BOOL);
+
+          break;
+          }
+        case TOKEN_DOUBLE:{
+          jj_consume_token(TOKEN_DOUBLE);
+
+          break;
+          }
+        default:
+          jj_la1[16] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        t = jj_consume_token(IDENTIFICADOR);
+if(t.image.length() > MAX){
+                    System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+                }
+                else{
+                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+                }
+      }
+      break;
+      }
+    default:
+      jj_la1[17] = jj_gen;
+      ;
+    }
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(ABRE_CHAVES);
+    label_6:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case 0:
+      case TOKEN_INT:
+      case TOKEN_FLOAT:
+      case TOKEN_CHAR:
+      case TOKEN_BOOL:
+      case TOKEN_DOUBLE:
+      case SUBTRACAO:
+      case ABRE_PARENTESIS:
+      case INTEIRO:
+      case IDENTIFICADOR:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[18] = jj_gen;
+        break label_6;
+      }
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case TOKEN_INT:
+      case TOKEN_FLOAT:
+      case TOKEN_CHAR:
+      case TOKEN_BOOL:
+      case TOKEN_DOUBLE:{
+        declarar_variavel();
+        break;
+        }
+      case 0:
+      case SUBTRACAO:
+      case ABRE_PARENTESIS:
+      case INTEIRO:{
+        operacao();
+        break;
+        }
+      case IDENTIFICADOR:{
+        chamar_funcao();
+        break;
+        }
+      default:
+        jj_la1[19] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+    jj_consume_token(FECHA_CHAVES);
+System.out.println("deu certo criar fun\u00e7\u00e3o");
+}
+
+// Função para inicializar o programa
+  final public void inicializar_programa() throws ParseException {
+    label_7:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case TOKEN_VOID:
       case TOKEN_INT:
       case TOKEN_FLOAT:
       case TOKEN_CHAR:
       case TOKEN_BOOL:
-      case TOKEN_RETURN:
-      case TOKEN_TRUE:
-      case TOKEN_FALSE:
-      case TOKEN_DOUBLE:
-      case TOKEN_SWITCH:
-      case TOKEN_DO:
-      case TOKEN_TRY:
-      case TOKEN_EXCEPT:
-      case TOKEN_IMPORT:
-      case ADICAO:
-      case SUBTRACAO:
-      case MULTIPLICACAO:
-      case DIVISAO:
-      case ATRIBUICAO:
-      case MODULO:
-      case IGUAL:
-      case DIFERENTE:
-      case MENOR:
-      case MAIOR:
-      case MAIOR_IGUAL:
-      case MENOR_IGUAL:
-      case AND:
-      case NOT:
-      case OR:
-      case INCREMENTO:
-      case DECREMENTO:
-      case SOMA_ATRIBUICAO:
-      case SUBTRACAO_ATRIBUICAO:
-      case MULTIPLICACAO_ATRIBUICAO:
-      case DIVISAO_ATRIBUICAO:
-      case MODULO_ATRIBUICAO:
-      case PONTO_VIRGULA:
-      case VIRGULA:
-      case PONTO:
-      case ABRE_CHAVES:
-      case FECHA_CHAVES:
-      case ABRE_PARENTESIS:
-      case FECHA_PARENTESIS:
-      case ABRE_COLCHETES:
-      case FECHA_COLCHETES:
-      case IDENTIFICADOR_INVALIDO:
-      case STRING_INVALIDA:
-      case REAL_INVALIDO:
-      case INTEIRO:
-      case REAL:
-      case IDENTIFICADOR:
-      case STRING:
-      case SIMBOLO_INVALIDO:{
+      case TOKEN_DOUBLE:{
         ;
         break;
         }
       default:
-        jj_la1[0] = jj_gen;
-        break label_1;
+        jj_la1[20] = jj_gen;
+        break label_7;
       }
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case TOKEN_IF:{
-        t = jj_consume_token(TOKEN_IF);
-inserirTokenUnico(reservada, "CONDICIONAL", t);
-        break;
-        }
-      case TOKEN_ELSE:{
-        t = jj_consume_token(TOKEN_ELSE);
-inserirTokenUnico(reservada, "CONDICIONAL", t);
-        break;
-        }
-      case TOKEN_WHILE:{
-        t = jj_consume_token(TOKEN_WHILE);
-inserirTokenUnico(reservada, "REPETICAO", t);
-        break;
-        }
-      case TOKEN_FOR:{
-        t = jj_consume_token(TOKEN_FOR);
-inserirTokenUnico(reservada, "REPETICAO", t);
-        break;
-        }
-      case TOKEN_VOID:{
-        t = jj_consume_token(TOKEN_VOID);
-inserirTokenUnico(reservada, "TIPO_DADO", t);
-        break;
-        }
-      case TOKEN_INT:{
-        t = jj_consume_token(TOKEN_INT);
-inserirTokenUnico(reservada, "TIPO_DADO", t);
-        break;
-        }
-      case TOKEN_FLOAT:{
-        t = jj_consume_token(TOKEN_FLOAT);
-inserirTokenUnico(reservada, "TIPO_DADO", t);
-        break;
-        }
-      case TOKEN_CHAR:{
-        t = jj_consume_token(TOKEN_CHAR);
-inserirTokenUnico(reservada, "TIPO_DADO", t);
-        break;
-        }
-      case TOKEN_BOOL:{
-        t = jj_consume_token(TOKEN_BOOL);
-inserirTokenUnico(reservada, "TIPO_DADO", t);
-        break;
-        }
-      case TOKEN_RETURN:{
-        t = jj_consume_token(TOKEN_RETURN);
-inserirTokenUnico(reservada, "RETORNO", t);
-        break;
-        }
-      case TOKEN_TRUE:{
-        t = jj_consume_token(TOKEN_TRUE);
-inserirTokenUnico(reservada, "VALOR_BOOLEANO", t);
-        break;
-        }
-      case TOKEN_FALSE:{
-        t = jj_consume_token(TOKEN_FALSE);
-inserirTokenUnico(reservada, "VALOR_BOOLEANO", t);
-        break;
-        }
-      case TOKEN_DOUBLE:{
-        t = jj_consume_token(TOKEN_DOUBLE);
-inserirTokenUnico(reservada, "TIPO_DADO", t);
-        break;
-        }
-      case TOKEN_SWITCH:{
-        t = jj_consume_token(TOKEN_SWITCH);
-inserirTokenUnico(reservada, "CONDICIONAL", t);
-        break;
-        }
-      case TOKEN_DO:{
-        t = jj_consume_token(TOKEN_DO);
-inserirTokenUnico(reservada, "REPETICAO",   t);
-        break;
-        }
-      case TOKEN_TRY:{
-        t = jj_consume_token(TOKEN_TRY);
-inserirTokenUnico(reservada, "EXCECAO", t);
-        break;
-        }
-      case TOKEN_EXCEPT:{
-        t = jj_consume_token(TOKEN_EXCEPT);
-inserirTokenUnico(reservada, "EXCECAO", t);
-        break;
-        }
-      case TOKEN_IMPORT:{
-        t = jj_consume_token(TOKEN_IMPORT);
-inserirTokenUnico(reservada, "IMPORT", t);
-        break;
-        }
-      case ADICAO:{
-        t = jj_consume_token(ADICAO);
-inserirTokenUnico(reservada, "OPERADOR_ADICAO", t);
-        break;
-        }
-      case SUBTRACAO:{
-        t = jj_consume_token(SUBTRACAO);
-inserirTokenUnico(reservada, "OPERADOR_SUBTRACAO", t);
-        break;
-        }
-      case MULTIPLICACAO:{
-        t = jj_consume_token(MULTIPLICACAO);
-inserirTokenUnico(reservada, "OPERADOR_MULTIPLICACAO", t);
-        break;
-        }
-      case DIVISAO:{
-        t = jj_consume_token(DIVISAO);
-inserirTokenUnico(reservada, "OPERADOR_DIVISAO", t);
-        break;
-        }
-      case ATRIBUICAO:{
-        t = jj_consume_token(ATRIBUICAO);
-inserirTokenUnico(reservada, "OPERADOR_ATRIBUICAO", t);
-        break;
-        }
-      case MODULO:{
-        t = jj_consume_token(MODULO);
-inserirTokenUnico(reservada, "OPERADOR_MODULO", t);
-        break;
-        }
-      case IGUAL:{
-        t = jj_consume_token(IGUAL);
-inserirTokenUnico(reservada, "OPERADOR_IGUAL", t);
-        break;
-        }
-      case DIFERENTE:{
-        t = jj_consume_token(DIFERENTE);
-inserirTokenUnico(reservada, "OPERADOR_DIFERENTE", t);
-        break;
-        }
-      case MENOR:{
-        t = jj_consume_token(MENOR);
-inserirTokenUnico(reservada, "OPERADOR_MENOR", t);
-        break;
-        }
-      case MAIOR:{
-        t = jj_consume_token(MAIOR);
-inserirTokenUnico(reservada, "OPERADOR_MAIOR", t);
-        break;
-        }
-      case MAIOR_IGUAL:{
-        t = jj_consume_token(MAIOR_IGUAL);
-inserirTokenUnico(reservada, "OPERADOR_MAIOR_IGUAL", t);
-        break;
-        }
-      case MENOR_IGUAL:{
-        t = jj_consume_token(MENOR_IGUAL);
-inserirTokenUnico(reservada, "OPERADOR_MENOR_IGUAL", t);
-        break;
-        }
-      case AND:{
-        t = jj_consume_token(AND);
-inserirTokenUnico(reservada, "OPERADOR_AND", t);
-        break;
-        }
-      case NOT:{
-        t = jj_consume_token(NOT);
-inserirTokenUnico(reservada, "OPERADOR_NOT", t);
-        break;
-        }
-      case OR:{
-        t = jj_consume_token(OR);
-inserirTokenUnico(reservada, "OPERADOR_OR", t);
-        break;
-        }
-      case INCREMENTO:{
-        t = jj_consume_token(INCREMENTO);
-inserirTokenUnico(reservada, "OPERADOR_INCREMENTO", t);
-        break;
-        }
-      case DECREMENTO:{
-        t = jj_consume_token(DECREMENTO);
-inserirTokenUnico(reservada, "OPERADOR_DECREMENTO", t);
-        break;
-        }
-      case SOMA_ATRIBUICAO:{
-        t = jj_consume_token(SOMA_ATRIBUICAO);
-inserirTokenUnico(reservada, "SOMA_ATRIBUICAO", t);
-        break;
-        }
-      case SUBTRACAO_ATRIBUICAO:{
-        t = jj_consume_token(SUBTRACAO_ATRIBUICAO);
-inserirTokenUnico(reservada, "SUBTRACAO_ATRIBUICAO", t);
-        break;
-        }
-      case MULTIPLICACAO_ATRIBUICAO:{
-        t = jj_consume_token(MULTIPLICACAO_ATRIBUICAO);
-inserirTokenUnico(reservada, "MULTIPLICACAO_ATRIBUICAO", t);
-        break;
-        }
-      case DIVISAO_ATRIBUICAO:{
-        t = jj_consume_token(DIVISAO_ATRIBUICAO);
-inserirTokenUnico(reservada, "DIVISAO_ATRIBUICAO", t);
-        break;
-        }
-      case MODULO_ATRIBUICAO:{
-        t = jj_consume_token(MODULO_ATRIBUICAO);
-inserirTokenUnico(reservada, "MODULO_ATRIBUICAO", t);
-        break;
-        }
-      case PONTO_VIRGULA:{
-        t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "SEPARADOR_PONTO_VIRGULA", t);
-        break;
-        }
-      case VIRGULA:{
-        t = jj_consume_token(VIRGULA);
-inserirTokenUnico(reservada, "SEPARADOR_VIRGULA", t);
-        break;
-        }
-      case PONTO:{
-        t = jj_consume_token(PONTO);
-inserirTokenUnico(reservada, "SEPARADOR_PONTO", t);
-        break;
-        }
-      case ABRE_CHAVES:{
-        t = jj_consume_token(ABRE_CHAVES);
-inserirTokenUnico(reservada, "SEPARADOR_ABRE_CHAVES", t);
-        break;
-        }
-      case FECHA_CHAVES:{
-        t = jj_consume_token(FECHA_CHAVES);
-inserirTokenUnico(reservada, "SEPARADOR_FECHA_CHAVES", t);
-        break;
-        }
-      case ABRE_PARENTESIS:{
-        t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "SEPARADOR_ABRE_PARENTESIS", t);
-        break;
-        }
-      case FECHA_PARENTESIS:{
-        t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "SEPARADOR_FECHA_PARENTESIS", t);
-        break;
-        }
-      case ABRE_COLCHETES:{
-        t = jj_consume_token(ABRE_COLCHETES);
-inserirTokenUnico(reservada, "SEPARADOR_ABRE_COLCHETES", t);
-        break;
-        }
-      case FECHA_COLCHETES:{
-        t = jj_consume_token(FECHA_COLCHETES);
-inserirTokenUnico(reservada, "SEPARADOR_FECHA_COLCHETES", t);
-        break;
-        }
-      case IDENTIFICADOR_INVALIDO:{
-        t = jj_consume_token(IDENTIFICADOR_INVALIDO);
-System.out.println("IDENTIFICADOR_INVALIDO: " + t.image);
-        break;
-        }
-      case STRING_INVALIDA:{
-        t = jj_consume_token(STRING_INVALIDA);
-System.out.println("STRING_INVALIDA: "+ t.image);
-        break;
-        }
-      case REAL_INVALIDO:{
-        t = jj_consume_token(REAL_INVALIDO);
-System.out.println("REAL_INVALIDO: "+ t.image);
-        break;
-        }
-      case INTEIRO:{
-        t = jj_consume_token(INTEIRO);
-inserirTokenUnico(simbolo, "CONSTANTE_INTEIRA", t);
-        break;
-        }
-      case REAL:{
-        t = jj_consume_token(REAL);
-inserirTokenUnico(simbolo, "CONSTANTE_REAL", t);
-        break;
-        }
-      case IDENTIFICADOR:{
-        t = jj_consume_token(IDENTIFICADOR);
-if (t.image.length() > MAX) {
-          System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-      } else {
-          inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-      }
-        break;
-        }
-      case STRING:{
-        t = jj_consume_token(STRING);
-inserirTokenUnico(simbolo, "STRING_LITERAL", t);
-        break;
-        }
-      case SIMBOLO_INVALIDO:{
-        t = jj_consume_token(SIMBOLO_INVALIDO);
-System.out.println("Simbolo invalido: "+ t.image);
-        break;
-        }
-      default:
-        jj_la1[1] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
+      criar_funcoes();
     }
     jj_consume_token(0);
+System.out.println("Pronto");
 }
 
   /** Generated Token Manager. */
@@ -491,7 +718,7 @@ System.out.println("Simbolo invalido: "+ t.image);
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[2];
+  final private int[] jj_la1 = new int[21];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -501,13 +728,13 @@ System.out.println("Simbolo invalido: "+ t.image);
 	   jj_la1_init_2();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0xffffff80,0xffffff80,};
+	   jj_la1_0 = new int[] {0x4000001,0x6000000,0x6000000,0x18000000,0x18000000,0x4000000,0x0,0x8f000,0x0,0x0,0x0,0x0,0x0,0x8f800,0x8f000,0x0,0x8f000,0x8f000,0x408f001,0x408f001,0x8f800,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x7fffffff,0x7fffffff,};
+	   jj_la1_1 = new int[] {0x1100000,0x0,0x0,0x0,0x0,0x1100000,0x1100000,0x0,0x10000,0x7000000,0x10000,0x7000000,0x7000000,0x0,0x0,0x10000,0x0,0x0,0x5100000,0x5100000,0x0,};
 	}
 	private static void jj_la1_init_2() {
-	   jj_la1_2 = new int[] {0x2,0x2,};
+	   jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
 	}
 
   /** Constructor with InputStream. */
@@ -521,7 +748,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 21; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -535,7 +762,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 21; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -545,7 +772,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 21; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -563,7 +790,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 21; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -572,7 +799,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 21; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -581,7 +808,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 21; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -637,7 +864,7 @@ System.out.println("Simbolo invalido: "+ t.image);
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 2; i++) {
+	 for (int i = 0; i < 21; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {
