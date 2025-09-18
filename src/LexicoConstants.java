@@ -45,87 +45,91 @@ public interface LexicoConstants {
   /** RegularExpression Id. */
   int TOKEN_IMPORT = 24;
   /** RegularExpression Id. */
-  int ADICAO = 25;
+  int TOKEN_READ = 25;
   /** RegularExpression Id. */
-  int SUBTRACAO = 26;
+  int TOKEN_WRITE = 26;
   /** RegularExpression Id. */
-  int MULTIPLICACAO = 27;
+  int ADICAO = 27;
   /** RegularExpression Id. */
-  int DIVISAO = 28;
+  int SUBTRACAO = 28;
   /** RegularExpression Id. */
-  int ATRIBUICAO = 29;
+  int MULTIPLICACAO = 29;
   /** RegularExpression Id. */
-  int MODULO = 30;
+  int DIVISAO = 30;
   /** RegularExpression Id. */
-  int IGUAL = 31;
+  int ATRIBUICAO = 31;
   /** RegularExpression Id. */
-  int DIFERENTE = 32;
+  int MODULO = 32;
   /** RegularExpression Id. */
-  int MENOR = 33;
+  int IGUAL = 33;
   /** RegularExpression Id. */
-  int MAIOR = 34;
+  int DIFERENTE = 34;
   /** RegularExpression Id. */
-  int MAIOR_IGUAL = 35;
+  int MENOR = 35;
   /** RegularExpression Id. */
-  int MENOR_IGUAL = 36;
+  int MAIOR = 36;
   /** RegularExpression Id. */
-  int AND = 37;
+  int MAIOR_IGUAL = 37;
   /** RegularExpression Id. */
-  int NOT = 38;
+  int MENOR_IGUAL = 38;
   /** RegularExpression Id. */
-  int OR = 39;
+  int AND = 39;
   /** RegularExpression Id. */
-  int INCREMENTO = 40;
+  int NOT = 40;
   /** RegularExpression Id. */
-  int DECREMENTO = 41;
+  int OR = 41;
   /** RegularExpression Id. */
-  int SOMA_ATRIBUICAO = 42;
+  int INCREMENTO = 42;
   /** RegularExpression Id. */
-  int SUBTRACAO_ATRIBUICAO = 43;
+  int DECREMENTO = 43;
   /** RegularExpression Id. */
-  int MULTIPLICACAO_ATRIBUICAO = 44;
+  int SOMA_ATRIBUICAO = 44;
   /** RegularExpression Id. */
-  int DIVISAO_ATRIBUICAO = 45;
+  int SUBTRACAO_ATRIBUICAO = 45;
   /** RegularExpression Id. */
-  int MODULO_ATRIBUICAO = 46;
+  int MULTIPLICACAO_ATRIBUICAO = 46;
   /** RegularExpression Id. */
-  int PONTO_VIRGULA = 47;
+  int DIVISAO_ATRIBUICAO = 47;
   /** RegularExpression Id. */
-  int VIRGULA = 48;
+  int MODULO_ATRIBUICAO = 48;
   /** RegularExpression Id. */
-  int PONTO = 49;
+  int PONTO_VIRGULA = 49;
   /** RegularExpression Id. */
-  int ABRE_CHAVES = 50;
+  int VIRGULA = 50;
   /** RegularExpression Id. */
-  int FECHA_CHAVES = 51;
+  int PONTO = 51;
   /** RegularExpression Id. */
-  int ABRE_PARENTESIS = 52;
+  int ABRE_CHAVES = 52;
   /** RegularExpression Id. */
-  int FECHA_PARENTESIS = 53;
+  int FECHA_CHAVES = 53;
   /** RegularExpression Id. */
-  int ABRE_COLCHETES = 54;
+  int ABRE_PARENTESIS = 54;
   /** RegularExpression Id. */
-  int FECHA_COLCHETES = 55;
+  int FECHA_PARENTESIS = 55;
   /** RegularExpression Id. */
-  int INTEIRO = 56;
+  int ABRE_COLCHETES = 56;
   /** RegularExpression Id. */
-  int REAL = 57;
+  int FECHA_COLCHETES = 57;
   /** RegularExpression Id. */
-  int IDENTIFICADOR = 58;
+  int INTEIRO = 58;
   /** RegularExpression Id. */
-  int IDENTIFICADOR_INVALIDO = 59;
+  int REAL = 59;
   /** RegularExpression Id. */
-  int STRING_INVALIDA = 60;
+  int IDENTIFICADOR = 60;
   /** RegularExpression Id. */
-  int REAL_INVALIDO = 61;
+  int STRING = 61;
   /** RegularExpression Id. */
-  int STRING = 62;
+  int IDENTIFICADOR_INVALIDO = 62;
   /** RegularExpression Id. */
-  int DIGITO = 63;
+  int STRING_INVALIDA = 63;
   /** RegularExpression Id. */
-  int LETRA = 64;
+  int REAL_INVALIDO = 64;
   /** RegularExpression Id. */
-  int SIMBOLO_INVALIDO = 65;
+  int DIGITO = 65;
+  /** RegularExpression Id. */
+  int LETRA = 66;
+  /** RegularExpression Id. */
+  int SIMBOLO_INVALIDO = 67;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -157,6 +161,8 @@ public interface LexicoConstants {
     "\"try\"",
     "\"except\"",
     "\"import\"",
+    "\"read\"",
+    "\"write\"",
     "\"+\"",
     "\"-\"",
     "\"*\"",
@@ -191,10 +197,10 @@ public interface LexicoConstants {
     "<INTEIRO>",
     "<REAL>",
     "<IDENTIFICADOR>",
+    "<STRING>",
     "<IDENTIFICADOR_INVALIDO>",
     "<STRING_INVALIDA>",
     "<REAL_INVALIDO>",
-    "<STRING>",
     "<DIGITO>",
     "<LETRA>",
     "<SIMBOLO_INVALIDO>",

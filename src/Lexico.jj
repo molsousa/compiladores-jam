@@ -50,15 +50,14 @@ public class Lexico
 
         try {
             parser = new Lexico(arquivo);
-			parser.inicializar_programa();
+            parser.inicializar_programa();
 		}
-        
 		catch(ParseException e) {
-            System.out.println(e);
+            System.out.println("Erro de sintaxe: " + e.getMessage());
         }
         catch(TokenMgrError e) {
-            System.out.println(e);
-      	}
+            System.out.println("Erro léxico: " + e.getMessage());
+        }
         scanner.close();
     }
 
@@ -80,22 +79,11 @@ public class Lexico
             System.out.println(tok);
         }
     }
-
-    public static void menu() {
-		System.out.println("1 - Imprimir palavras reservadas");
-		System.out.println("2 - Imprimir símbolos");
-		System.out.println("0 - Sair");
-		System.out.print("Insira uma opção: ");
-    }
-
-    public static void buffer(Scanner scanner) {
-		if(scanner.hasNextLine()) {
-		  	scanner.nextLine();
-		}
-    }
 }
 
 PARSER_END(Lexico)
+
+// TOKENS (Léxico)
 
 SKIP :
 {
@@ -104,7 +92,7 @@ SKIP :
 | "\t"
 | "\n"
 | < "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n") >
-| < "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/" > 
+| < "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/" >
 }
 
 // Palavras reservadas
@@ -128,6 +116,8 @@ TOKEN:
 |   < TOKEN_TRY: "try" >
 |   < TOKEN_EXCEPT: "except" >
 |   < TOKEN_IMPORT: "import" >
+| 	< TOKEN_READ: "read" >
+| 	< TOKEN_WRITE: "write" >
 }
 
 // Operadores
@@ -171,21 +161,21 @@ TOKEN:
 |   < FECHA_COLCHETES: "]" >
 }
 
-// Tabela de simbolos
+// Tabela de simbolos e tipos de dados
 TOKEN:
 {
   < INTEIRO: (<DIGITO>)+ >
 | < REAL: (<DIGITO>)+ "." (<DIGITO>)+ >
 | < IDENTIFICADOR: <LETRA> (<LETRA> | <DIGITO> | "_")* >
+| < STRING: "\"" (~["\"","\n","\r"])* "\"" >
 }
 
-// Erros identificados
+// Erros
 TOKEN:
 {
-  < IDENTIFICADOR_INVALIDO: ((<LETRA>)+ ["@","#","$","&","?"] (<LETRA> | <DIGITO> | "_")*) | ((<DIGITO>)+ (<LETRA>)+ (<LETRA>|<DIGITO>)*)> 
+  < IDENTIFICADOR_INVALIDO: ((<LETRA>)+ ["@","#","$","&","?"] (<LETRA> | <DIGITO> | "_")*) | ((<DIGITO>)+ (<LETRA>)+ (<LETRA>|<DIGITO>)*)>
 | < STRING_INVALIDA: "\"" (~["\"","\n","\r"])* ("\n"|"\r"|"\r\n") >
-| < REAL_INVALIDO : (["+","-"])? (<DIGITO>)+ "." ~["0"-"9"] > 
-| < STRING: "\"" (~["\"","\n","\r"])* "\"" >
+| < REAL_INVALIDO : (["+","-"])? (<DIGITO>)+ "." ~["0"-"9"] >
 }
 
 // Simbolos base
@@ -201,264 +191,276 @@ TOKEN:
     < SIMBOLO_INVALIDO: ~[] >
 }
 
-void utilitario():
+// Sintático
+
+
+// 1. BIBLIOTECAS
+void inicializar_programa():
+{}
 {
+	( inclusao_biblioteca() )*
+	( criar_funcoes() )*
+  	<EOF> { System.out.println("Análise sintática finalizada."); }
 }
+
+void inclusao_biblioteca():
+{}
 {
-  	(
-        declarar_variavel()
-|       chamar_funcao()
-|       operacao_literal()
-|  		if_else()
-)*
+    <TOKEN_IMPORT> <STRING> <PONTO_VIRGULA>
+}
+
+
+// 2. BLOCO DE COMANDOS
+void bloco_de_comandos():
+{}
+{
+  	( comando() )*
+}
+
+
+// Regra unica de comando.
+void comando():
+{}
+{
+	  // 3. DECLARAÇÃO DE VARIÁVEIS
+	  declarar_variavel()
+	// LOOKAHEAD para resolver a ambiguidade entre chamada de função e atribuição.
+	| LOOKAHEAD(2) atribuicao()
+	// 4. CHAMADA DE FUNÇÃO
+	| chamar_funcao()
+	// 5. ESTRUTURA CONDICIONAL (IF e IF/ELSE)
+	| if_else()
+	// 6. ESTRUTURA DE REPETIÇÃO (WHILE)
+    | laco_while()
+	// 7. ESTRUTURA DE REPETIÇÃO (FOR)
+	| laco_for()
+	// 8. COMANDO DE RETORNO
+    | retorno()
+	// 9. COMANDO DE ESCRITA
+	| comando_escrita()
+	// 10. COMANDO DE LEITURA
+	| comando_leitura()
+    | <PONTO_VIRGULA> // Permite comandos vazios
+}
+
+
+// Estrutura condicional if/else.
+void if_else():
+{}
+{
+	<TOKEN_IF> <ABRE_PARENTESIS> expressao() <FECHA_PARENTESIS>
+	<ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
+	( senao() )?
 }
 
 void senao():
+{}
 {
-}
-{
-  	< TOKEN_ELSE > <ABRE_CHAVES > { utilitario(); } < FECHA_CHAVES >
-}
-
-void comparacao_booleana():
-{
-}
-{
-(
-  	< IDENTIFICADOR > { }
-| 	< INTEIRO > { }
-| 	< STRING > { }
-)
-(
-(
-  	< IGUAL > { }
-| 	< MAIOR > { }
-| 	< MENOR > { }
-| 	< MAIOR_IGUAL > { }
-| 	< MENOR_IGUAL > { }
-| 	< AND > { }
-| 	< OR > { }
-| 	< DIFERENTE > { })
-(
-  	< IDENTIFICADOR > { }
-| 	< INTEIRO > { }
-| 	< STRING > { })
-)*
+  	<TOKEN_ELSE> <ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
 }
 
-void if_else():
+// Laço de repetição while.
+void laco_while():
+{}
 {
-}
-{
-	< TOKEN_IF > { }  < ABRE_PARENTESIS > { } comparacao_booleana() < FECHA_PARENTESIS > { }
-	< ABRE_CHAVES > { } < FECHA_CHAVES > { System.out.println("deu certo criar o if_else"); }
-}
-
-// Funções para operações matemáticas com valores literais
-int operacao_literal():
-{
-	int resultado;
-}
-{
-	resultado = exp() < PONTO_VIRGULA > { return resultado; }
-| 	< EOF >
+    <TOKEN_WHILE> <ABRE_PARENTESIS> expressao() <FECHA_PARENTESIS>
+    <ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
 }
 
-int exp():
+// Laço de repetição for.
+void laco_for():
+{}
 {
-	int resultado, op;
-}
-{
-	resultado = termo()
-(	< ADICAO > op = termo()     { resultado = resultado + op; }
-| 	< SUBTRACAO > op = termo()  { resultado = resultado - op; }
-)* 								{ return resultado; } 
-}
-
-int termo():
-{
-	int resultado, op;
-}
-{
-	resultado = unario()
-(  	< MULTIPLICACAO > op = unario() { resultado = resultado * op; }
-|  	< DIVISAO >		  op = unario() { resultado = resultado / op; }
-)* 									{ return resultado; } 
+    <TOKEN_FOR> <ABRE_PARENTESIS>
+        ( atribuicao_simples() )? <PONTO_VIRGULA>
+        ( expressao() )? <PONTO_VIRGULA>
+        ( atribuicao_simples())?
+    <FECHA_PARENTESIS>
+    <ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
 }
 
-int unario():
+
+// Comando de escrita de dados.
+void comando_escrita():
+{}
 {
-  	int resultado, op;
-}
-{
-(
-	< SUBTRACAO > resultado = fator() { op = -resultado; }
-| 	resultado = fator() 			  { op = resultado; }
-)									  { return resultado; }
+    <TOKEN_WRITE> <ABRE_PARENTESIS> lista_de_argumentos() <FECHA_PARENTESIS> <PONTO_VIRGULA>
 }
 
-int fator():
+
+// Comando de leitura de dados.
+void comando_leitura():
+{}
 {
-	Token t;
-	int resultado;
-}
-{
-(
-	< ABRE_PARENTESIS > resultado = exp() < FECHA_PARENTESIS > {}
-|	t = <INTEIRO> { resultado = Integer.parseInt(t.image);}
-)				  { return resultado; }
+    <TOKEN_READ> <ABRE_PARENTESIS> <IDENTIFICADOR> <FECHA_PARENTESIS> <PONTO_VIRGULA>
 }
 
-// Função para declarar variaveis
+// Comando de retorno de função.
+void retorno():
+{}
+{
+    <TOKEN_RETURN> ( expressao() )? <PONTO_VIRGULA> 
+}
+
+
+// 11. ATRIBUIÇÕES
+void atribuicao():
+{}
+{
+    <IDENTIFICADOR> <ATRIBUICAO> expressao() <PONTO_VIRGULA>
+}
+
+// Regra auxiliar para o laço 'for', que é uma atribuição sem o ponto e vírgula final.
+void atribuicao_simples():
+{}
+{
+    <IDENTIFICADOR> <ATRIBUICAO> expressao()
+}
+
+
+// Nível mais alto da expressão. Começa com o operador de menor precedência (OR).
+void expressao():
+{}
+{
+	expressao_or()
+}
+
+// 12. OPERADORES LÓGICOS (OR)
+void expressao_or():
+{}
+{
+    expressao_and() ( <OR> expressao_and() )*
+}
+
+// 13. OPERADORES LÓGICOS (AND)
+void expressao_and():
+{}
+{
+    expressao_relacional() ( <AND> expressao_relacional() )*
+}
+
+// 14. OPERADORES RELACIONAIS (==, !=, <, >, <=, >=)
+void expressao_relacional():
+{}
+{
+    expressao_aritmetica()
+    (
+        ( <IGUAL> | <DIFERENTE> | <MENOR> | <MAIOR> | <MENOR_IGUAL> | <MAIOR_IGUAL> )
+        expressao_aritmetica()
+    )?
+}
+
+// 15. OPERADORES ARITMÉTICOS (+, -)
+void expressao_aritmetica():
+{}
+{
+	termo() ( ( <ADICAO> | <SUBTRACAO> ) termo() )*
+}
+
+
+// 16. OPERADORES ARITMÉTICOS (*, /)
+void termo():
+{}
+{
+	fator() ( ( <MULTIPLICACAO> | <DIVISAO> ) fator() )*
+}
+
+// 17. OPERADORES UNÁRIOS (!, -)
+void fator():
+{}
+{
+    ( <SUBTRACAO> | <NOT> ) fator()
+|   valor_base()
+}
+
+
+// Base da recursão das expressões. Define os elementos atômicos.
+void valor_base():
+{}
+{
+	<INTEIRO>
+|   <REAL>
+// 18. USO DE STRINGS
+|   <STRING>
+|   <TOKEN_TRUE>
+|   <TOKEN_FALSE>
+|   <IDENTIFICADOR>
+// 19. USO DE PARÊNTESES
+|	<ABRE_PARENTESIS> expressao() <FECHA_PARENTESIS>
+}
+
+// Função para declarar variáveis
 void declarar_variavel():
 {
-      Token t;
+    Token t;
 }
 {
-    ( 
-        < TOKEN_INT > { }
-    |   < TOKEN_FLOAT > { }
-    |   < TOKEN_CHAR > { }
-    | 	< TOKEN_BOOL > { }
-    |   < TOKEN_DOUBLE > { }
-  )
-    t = < IDENTIFICADOR > { 
-        if(t.image.length() > MAX){
-            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
+    ( <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    t = <IDENTIFICADOR> {
+        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
+        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
     }
-    ( 
-        < VIRGULA > t = < IDENTIFICADOR > { 
-            if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-            }
-            else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-            }
-        }
-    )*
-    < PONTO_VIRGULA > { System.out.println("deu declarar certo variável"); }
+    ( <VIRGULA> t = <IDENTIFICADOR> {
+        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
+        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+    })*
+    <PONTO_VIRGULA>
 }
 
+// Função para chamada de funções
 void chamar_funcao():
 {
     Token t;
 }
 {
-    t = < IDENTIFICADOR > { 
-        if(t.image.length() > MAX){
-            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
+    t = <IDENTIFICADOR> {
+        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
+        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
     }
-    < ABRE_PARENTESIS >
-    ( 
-        ( 
-            < INTEIRO > { }
-        |   < REAL > { }
-        |   < IDENTIFICADOR > { 
-                if(t.image.length() > MAX){ 
-                    System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-                }
-                else{
-                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-                }
-            }
-        )
-        ( 
-            < VIRGULA > 
-            ( 
-                < INTEIRO > { }
-            |   < REAL > { }
-            |   < IDENTIFICADOR > { 
-                    if(t.image.length() > MAX){
-                        System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-                    }
-                    else{
-                        inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-                    }
-                }
-            )
-        )*
-    )?
-    < FECHA_PARENTESIS >
-    < PONTO_VIRGULA > { System.out.println("deu certo chamada de função"); }
+    <ABRE_PARENTESIS> ( lista_de_argumentos() )? <FECHA_PARENTESIS> <PONTO_VIRGULA>
 }
 
+// Regra auxiliar para lista de argumentos em chamadas de função
+void lista_de_argumentos():
+{}
+{
+    expressao() ( <VIRGULA> expressao() )*
+}
+
+
+
+// 20. DEFINIÇÃO DE FUNÇÕES
 void criar_funcoes():
 {
     Token t;
 }
 {
-    ( 
-        < TOKEN_VOID > { }
-    |   < TOKEN_INT > { }
-    | 	< TOKEN_FLOAT > { }
-    | 	< TOKEN_CHAR > { }
-    | 	< TOKEN_BOOL > { }
-    | 	< TOKEN_DOUBLE > { }
-    )
-    t = < IDENTIFICADOR > { 
-        if(t.image.length() > MAX){
-            System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-            inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
+    ( <TOKEN_VOID> | <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    t = <IDENTIFICADOR> {
+        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);}
+        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
     }
-    < ABRE_PARENTESIS >
-    (
-        ( 
-            < TOKEN_INT > { }
-        |   < TOKEN_FLOAT > { }
-        |   < TOKEN_CHAR > { }
-        |   < TOKEN_BOOL > { }
-        |   < TOKEN_DOUBLE > { }
-        )
-        t = < IDENTIFICADOR > { 
-            if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-            }
-            else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-            }
-        }
-        (
-            < VIRGULA > 
-            (
-                < TOKEN_INT > { }
-            |   < TOKEN_FLOAT > { }
-            |   < TOKEN_CHAR > { }
-            |   < TOKEN_BOOL > { }
-            |   < TOKEN_DOUBLE > { }
-            )
-            t = < IDENTIFICADOR > { 
-                if(t.image.length() > MAX){
-                    System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-                }
-                else{
-                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-                }
-            }
-        )*
-        )?
-        < FECHA_PARENTESIS >
-        < ABRE_CHAVES >
-        utilitario()
-        < FECHA_CHAVES > { System.out.println("deu certo criar função"); }
+    <ABRE_PARENTESIS> ( lista_de_parametros() )? <FECHA_PARENTESIS>
+    <ABRE_CHAVES>
+        bloco_de_comandos()
+    <FECHA_CHAVES>
 }
 
-// Função para inicializar o programa
-void inicializar_programa():
+// Regra auxiliar para lista de parâmetros em definições de função
+void lista_de_parametros():
 {
+    Token t;
 }
 {
-	(	criar_funcoes()
-)*
-  < EOF > { System.out.println("Pronto"); }
+    ( <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    t = <IDENTIFICADOR> {
+         if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
+         else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+    }
+    ( <VIRGULA> ( <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+        t = <IDENTIFICADOR> {
+             if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
+             else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+        }
+    )*
 }

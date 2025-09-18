@@ -1,23 +1,46 @@
+import "lexico.java";
+
 void main()
 {
 	integer x;
 	float y;
+	
 	soma(5, 8);
 	
 	double z;
-	
-	5+4;
 }
 
 integer soma(integer a, integer b)
 {
     integer y;
+    integer c;
+    integer i;
     
+    for(i = 5; i < 5; i = i+1){
+    	c = i;
+    }
+    
+    for( ; ; ){}
+    
+    while(i == 5){
+    
+    }
+    
+    c = a * b;
+    
+    return c;
 }
 
 float subtrai(float a, float b)
 {
     if(a == b){
-    
+    	a = a + b;
+    	
+    	return a;
     }
+    else{
+    	b = b + a;
+    }
+    
+    return b;
 }
