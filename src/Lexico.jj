@@ -50,28 +50,6 @@ public class Lexico
 
         try {
             parser = new Lexico(arquivo);
-            //parser.processarEntrada();
-            /*
-			do {
-				menu();
-				opcao = scanner.nextInt();
-				buffer(scanner);
-	
-				switch(opcao) {
-			    case 1:
-			        System.out.println("\n---PALAVRAS RESERVADAS E OPERADORES---");
-			        parser.imprimirTokens(reservada);
-			        break;
-			    case 2:
-			        System.out.println("\n---CONSTANTES E IDENTIFICADORES---");
-			        parser.imprimirTokens(simbolo);
-					break;
-				case 0:
-					System.out.println("Obrigado!!");
-					break;
-				}
-			}while(opcao != 0);
-			*/
 			parser.inicializar_programa();
 		}
         
@@ -80,9 +58,7 @@ public class Lexico
         }
         catch(TokenMgrError e) {
             System.out.println(e);
-        }
-
-        
+      	}
         scanner.close();
     }
 
@@ -224,86 +200,62 @@ TOKEN:
 {
     < SIMBOLO_INVALIDO: ~[] >
 }
-/*
-void processarEntrada():
+
+void utilitario():
 {
-  Token t;
 }
 {
-  (
-    t = < TOKEN_IF > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
-  | t = < TOKEN_ELSE > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
-  | t = < TOKEN_WHILE > { inserirTokenUnico(reservada, "REPETICAO", t); }
-  | t = < TOKEN_FOR > { inserirTokenUnico(reservada, "REPETICAO", t); }
-  | t = < TOKEN_VOID > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
-  | t = < TOKEN_INT > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
-  | t = < TOKEN_FLOAT > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
-  | t = < TOKEN_CHAR > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
-  | t = < TOKEN_BOOL > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
-  | t = < TOKEN_RETURN > { inserirTokenUnico(reservada, "RETORNO", t); }
-  | t = < TOKEN_TRUE > { inserirTokenUnico(reservada, "VALOR_BOOLEANO", t); }
-  | t = < TOKEN_FALSE > { inserirTokenUnico(reservada, "VALOR_BOOLEANO", t); }
-  | t = < TOKEN_DOUBLE > { inserirTokenUnico(reservada, "TIPO_DADO", t); }
-  | t = < TOKEN_SWITCH > { inserirTokenUnico(reservada, "CONDICIONAL", t); }
-  | t = < TOKEN_DO > { inserirTokenUnico(reservada, "REPETICAO",   t); }
-  | t = < TOKEN_TRY > { inserirTokenUnico(reservada, "EXCECAO", t); }
-  | t = < TOKEN_EXCEPT > { inserirTokenUnico(reservada, "EXCECAO", t); }
-  | t = < TOKEN_IMPORT > { inserirTokenUnico(reservada, "IMPORT", t); }
-
-  | t = < ADICAO > { inserirTokenUnico(reservada, "OPERADOR_ADICAO", t); }
-  | t = < SUBTRACAO > { inserirTokenUnico(reservada, "OPERADOR_SUBTRACAO", t); }
-  | t = < MULTIPLICACAO > { inserirTokenUnico(reservada, "OPERADOR_MULTIPLICACAO", t); }
-  | t = < DIVISAO > { inserirTokenUnico(reservada, "OPERADOR_DIVISAO", t); }
-  | t = < ATRIBUICAO > { inserirTokenUnico(reservada, "OPERADOR_ATRIBUICAO", t); }
-  | t = < MODULO > { inserirTokenUnico(reservada, "OPERADOR_MODULO", t); }
-  | t = < IGUAL > { inserirTokenUnico(reservada, "OPERADOR_IGUAL", t); }
-  | t = < DIFERENTE > { inserirTokenUnico(reservada, "OPERADOR_DIFERENTE", t); }
-  | t = < MENOR > { inserirTokenUnico(reservada, "OPERADOR_MENOR", t); }
-  | t = < MAIOR > { inserirTokenUnico(reservada, "OPERADOR_MAIOR", t); }
-  | t = < MAIOR_IGUAL > { inserirTokenUnico(reservada, "OPERADOR_MAIOR_IGUAL", t); }
-  | t = < MENOR_IGUAL > { inserirTokenUnico(reservada, "OPERADOR_MENOR_IGUAL", t); }
-  | t = < AND > { inserirTokenUnico(reservada, "OPERADOR_AND", t); }
-  | t = < NOT > { inserirTokenUnico(reservada, "OPERADOR_NOT", t); }
-  | t = < OR > { inserirTokenUnico(reservada, "OPERADOR_OR", t); }
-  | t = < INCREMENTO > { inserirTokenUnico(reservada, "OPERADOR_INCREMENTO", t); }
-  | t = < DECREMENTO > { inserirTokenUnico(reservada, "OPERADOR_DECREMENTO", t); }
-  | t = < SOMA_ATRIBUICAO > { inserirTokenUnico(reservada, "SOMA_ATRIBUICAO", t); }
-  | t = < SUBTRACAO_ATRIBUICAO > { inserirTokenUnico(reservada, "SUBTRACAO_ATRIBUICAO", t); }
-  | t = < MULTIPLICACAO_ATRIBUICAO > { inserirTokenUnico(reservada, "MULTIPLICACAO_ATRIBUICAO", t); }
-  | t = < DIVISAO_ATRIBUICAO > { inserirTokenUnico(reservada, "DIVISAO_ATRIBUICAO", t); }
-  | t = < MODULO_ATRIBUICAO > { inserirTokenUnico(reservada, "MODULO_ATRIBUICAO", t); }
-
-  | t = < PONTO_VIRGULA > { inserirTokenUnico(reservada, "SEPARADOR_PONTO_VIRGULA", t); }
-  | t = < VIRGULA > { inserirTokenUnico(reservada, "SEPARADOR_VIRGULA", t); }
-  | t = < PONTO > { inserirTokenUnico(reservada, "SEPARADOR_PONTO", t); }
-  | t = < ABRE_CHAVES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_CHAVES", t); }
-  | t = < FECHA_CHAVES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_CHAVES", t); }
-  | t = < ABRE_PARENTESIS > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_PARENTESIS", t); }
-  | t = < FECHA_PARENTESIS > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_PARENTESIS", t); }
-  | t = < ABRE_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_ABRE_COLCHETES", t); }
-  | t = < FECHA_COLCHETES > { inserirTokenUnico(reservada, "SEPARADOR_FECHA_COLCHETES", t); }
-
-  | t = < IDENTIFICADOR_INVALIDO > { System.out.println("IDENTIFICADOR_INVALIDO: " + t.image); }
-  | t = < STRING_INVALIDA > { System.out.println("STRING_INVALIDA: "+ t.image); }
-  | t = < REAL_INVALIDO > { System.out.println("REAL_INVALIDO: "+ t.image); }
-  | t = < INTEIRO > { inserirTokenUnico(simbolo, "CONSTANTE_INTEIRA", t); }
-  | t = < REAL > { inserirTokenUnico(simbolo, "CONSTANTE_REAL", t); }
-  | t = < IDENTIFICADOR > {
-      if (t.image.length() > MAX) {
-          System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-      } else {
-          inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-      }
-    }
-  | t = < STRING > { inserirTokenUnico(simbolo, "STRING_LITERAL", t); }
-  | t = < SIMBOLO_INVALIDO > { System.out.println("Simbolo invalido: "+ t.image); }
-  )*
-  < EOF >
+  	(
+        declarar_variavel()
+|       chamar_funcao()
+|       operacao_literal()
+|  		if_else()
+)*
 }
-*/
 
-// Funções para operações matemáticas
-int operacao():
+void senao():
+{
+}
+{
+  	< TOKEN_ELSE > <ABRE_CHAVES > { utilitario(); } < FECHA_CHAVES >
+}
+
+void comparacao_booleana():
+{
+}
+{
+(
+  	< IDENTIFICADOR > { }
+| 	< INTEIRO > { }
+| 	< STRING > { }
+)
+(
+(
+  	< IGUAL > { }
+| 	< MAIOR > { }
+| 	< MENOR > { }
+| 	< MAIOR_IGUAL > { }
+| 	< MENOR_IGUAL > { }
+| 	< AND > { }
+| 	< OR > { }
+| 	< DIFERENTE > { })
+(
+  	< IDENTIFICADOR > { }
+| 	< INTEIRO > { }
+| 	< STRING > { })
+)*
+}
+
+void if_else():
+{
+}
+{
+	< TOKEN_IF > { }  < ABRE_PARENTESIS > { } comparacao_booleana() < FECHA_PARENTESIS > { }
+	< ABRE_CHAVES > { } < FECHA_CHAVES > { System.out.println("deu certo criar o if_else"); }
+}
+
+// Funções para operações matemáticas com valores literais
+int operacao_literal():
 {
 	int resultado;
 }
@@ -460,7 +412,7 @@ void criar_funcoes():
         }
     }
     < ABRE_PARENTESIS >
-    ( 
+    (
         ( 
             < TOKEN_INT > { }
         |   < TOKEN_FLOAT > { }
@@ -476,9 +428,9 @@ void criar_funcoes():
                 inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
             }
         }
-        ( 
+        (
             < VIRGULA > 
-            ( 
+            (
                 < TOKEN_INT > { }
             |   < TOKEN_FLOAT > { }
             |   < TOKEN_CHAR > { }
@@ -497,11 +449,7 @@ void criar_funcoes():
         )?
         < FECHA_PARENTESIS >
         < ABRE_CHAVES >
-        (
-        declarar_variavel()
-|       operacao()
-|       chamar_funcao()
-)*
+        utilitario()
         < FECHA_CHAVES > { System.out.println("deu certo criar função"); }
 }
 
