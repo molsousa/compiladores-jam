@@ -200,19 +200,25 @@ void inicializar_programa():
 {
 	( inclusao_biblioteca() )*
 	( criar_funcoes() )*
-  	<EOF> { System.out.println("Análise sintática finalizada."); }
+  	<EOF> { System.out.println("Programa finalizado."); }
 }
 
 void inclusao_biblioteca():
-{}
 {
-    <TOKEN_IMPORT> <STRING> <PONTO_VIRGULA>
+	Token t;
+}
+{
+    t = <TOKEN_IMPORT> { inserirTokenUnico(reservada, "IMPORT", t); }
+    t = <STRING> { inserirTokenUnico(simbolo, "STRING", t); }
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+    					 System.out.println("Biblioteca importada"); }
 }
 
 
 // 2. BLOCO DE COMANDOS
 void bloco_de_comandos():
-{}
+{
+}
 {
   	( comando() )*
 }
@@ -220,10 +226,12 @@ void bloco_de_comandos():
 
 // Regra unica de comando.
 void comando():
-{}
 {
-	  // 3. DECLARAÇÃO DE VARIÁVEIS
-	  declarar_variavel()
+  	Token t;
+}
+{
+	// 3. DECLARAÇÃO DE VARIÁVEIS
+	declarar_variavel()
 	// LOOKAHEAD para resolver a ambiguidade entre chamada de função e atribuição.
 	| LOOKAHEAD(2) atribuicao()
 	// 4. CHAMADA DE FUNÇÃO
@@ -240,81 +248,124 @@ void comando():
 	| comando_escrita()
 	// 10. COMANDO DE LEITURA
 	| comando_leitura()
-    | <PONTO_VIRGULA> // Permite comandos vazios
+    | t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); } // Permite comandos vazios
 }
 
 
 // Estrutura condicional if/else.
 void if_else():
-{}
 {
-	<TOKEN_IF> <ABRE_PARENTESIS> expressao() <FECHA_PARENTESIS>
-	<ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
+	Token t;
+}
+{
+	t = <TOKEN_IF> { inserirTokenUnico(reservada, "IF", t); }
+	t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } expressao()
+	t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+	t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
+	t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t);
+						System.out.println("If criado"); }
 	( senao() )?
 }
 
 void senao():
-{}
 {
-  	<TOKEN_ELSE> <ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
+	Token t;
+}
+{
+  	t = <TOKEN_ELSE> { inserirTokenUnico(reservada, "ELSE", t); }
+  	t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
+  	t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t);
+  						System.out.println("Else criado"); }
 }
 
 // Laço de repetição while.
 void laco_while():
-{}
 {
-    <TOKEN_WHILE> <ABRE_PARENTESIS> expressao() <FECHA_PARENTESIS>
-    <ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
+	Token t;
+}
+{
+    t = <TOKEN_WHILE> { inserirTokenUnico(reservada, "WHILE", t); }
+    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } expressao()
+    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+    t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
+    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t);
+      					 System.out.println("While criado"); }
 }
 
 // Laço de repetição for.
 void laco_for():
-{}
 {
-    <TOKEN_FOR> <ABRE_PARENTESIS>
-        ( atribuicao_simples() )? <PONTO_VIRGULA>
-        ( expressao() )? <PONTO_VIRGULA>
-        ( atribuicao_simples())?
-    <FECHA_PARENTESIS>
-    <ABRE_CHAVES> bloco_de_comandos() <FECHA_CHAVES>
+	Token t;
+}
+{
+    t = <TOKEN_FOR> { inserirTokenUnico(reservada, "FOR", t); }
+    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } ( atribuicao_simples() )?
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); } ( expressao() )?
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); } ( atribuicao_simples())?
+    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+    t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
+    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t); }
 }
 
 
 // Comando de escrita de dados.
 void comando_escrita():
-{}
 {
-    <TOKEN_WRITE> <ABRE_PARENTESIS> lista_de_argumentos() <FECHA_PARENTESIS> <PONTO_VIRGULA>
+	Token t;
+}
+{
+    t = <TOKEN_WRITE> { inserirTokenUnico(reservada, "WRITE", t); }
+    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } lista_de_argumentos()
+    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); }
 }
 
 
 // Comando de leitura de dados.
 void comando_leitura():
-{}
 {
-    <TOKEN_READ> <ABRE_PARENTESIS> <IDENTIFICADOR> <FECHA_PARENTESIS> <PONTO_VIRGULA>
+  	Token t;
+}
+{
+    t = <TOKEN_READ> { inserirTokenUnico(reservada, "READ", t); }
+    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); }
+    t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); }
 }
 
 // Comando de retorno de função.
 void retorno():
-{}
 {
-    <TOKEN_RETURN> ( expressao() )? <PONTO_VIRGULA> 
+	Token t;
+}
+{
+    t = <TOKEN_RETURN> {  inserirTokenUnico(reservada, "RETURN", t); } ( expressao() )?
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+    					  System.out.println("Retorno");}
 }
 
 
 // 11. ATRIBUIÇÕES
 void atribuicao():
-{}
 {
-    <IDENTIFICADOR> <ATRIBUICAO> expressao() <PONTO_VIRGULA>
+	Token t;
+}
+{
+   	t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+   	t = <ATRIBUICAO> { inserirTokenUnico(reservada, "ATRIBUICAO", t); } expressao()
+   	t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+   						System.out.println("Atribuição"); }
 }
 
 // Regra auxiliar para o laço 'for', que é uma atribuição sem o ponto e vírgula final.
 void atribuicao_simples():
-{}
 {
-    <IDENTIFICADOR> <ATRIBUICAO> expressao()
+	Token t;
+}
+{
+    t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+    t = <ATRIBUICAO> { inserirTokenUnico(reservada, "ATRIBUICAO", t); } expressao()
 }
 
 
@@ -327,66 +378,89 @@ void expressao():
 
 // 12. OPERADORES LÓGICOS (OR)
 void expressao_or():
-{}
 {
-    expressao_and() ( <OR> expressao_and() )*
+	Token t;
+}
+{
+    expressao_and() ( t = <OR> { inserirTokenUnico(reservada, "OR", t); } expressao_and() )*
 }
 
 // 13. OPERADORES LÓGICOS (AND)
 void expressao_and():
-{}
 {
-    expressao_relacional() ( <AND> expressao_relacional() )*
+	Token t;
+}
+{
+    expressao_relacional() ( t = <AND> { inserirTokenUnico(reservada, "AND", t); } expressao_relacional() )*
 }
 
 // 14. OPERADORES RELACIONAIS (==, !=, <, >, <=, >=)
 void expressao_relacional():
-{}
+{
+	Token t;
+}
 {
     expressao_aritmetica()
     (
-        ( <IGUAL> | <DIFERENTE> | <MENOR> | <MAIOR> | <MENOR_IGUAL> | <MAIOR_IGUAL> )
+        ( t = <IGUAL> { inserirTokenUnico(reservada, "IGUAL", t); }
+        | t = <DIFERENTE> { inserirTokenUnico(reservada, "DIFERENTE", t); }
+        | t = <MENOR> { inserirTokenUnico(reservada, "MENOR", t); }
+        | t = <MAIOR> { inserirTokenUnico(reservada, "MAIOR", t); }
+        | t = <MENOR_IGUAL> { inserirTokenUnico(reservada, "MENOR_IGUAL", t); }
+        | t = <MAIOR_IGUAL> { inserirTokenUnico(reservada, "MAIOR_IGUAL", t); } )
         expressao_aritmetica()
     )?
 }
 
 // 15. OPERADORES ARITMÉTICOS (+, -)
 void expressao_aritmetica():
-{}
 {
-	termo() ( ( <ADICAO> | <SUBTRACAO> ) termo() )*
+	Token t;
+}
+{
+	termo() ( ( t = <ADICAO> { inserirTokenUnico(reservada, "ADICAO", t); }
+			  | t = <SUBTRACAO> { inserirTokenUnico(reservada, "SUBTRACAO", t); } ) termo() )*
 }
 
 
 // 16. OPERADORES ARITMÉTICOS (*, /)
 void termo():
-{}
 {
-	fator() ( ( <MULTIPLICACAO> | <DIVISAO> ) fator() )*
+	Token t;
+}
+{
+	fator() ( ( t = <MULTIPLICACAO> { inserirTokenUnico(reservada, "MULTIPLICACAO", t); }
+			  | t = <DIVISAO> { inserirTokenUnico(reservada, "DIVISAO", t); } ) fator() )*
 }
 
 // 17. OPERADORES UNÁRIOS (!, -)
 void fator():
-{}
 {
-    ( <SUBTRACAO> | <NOT> ) fator()
+	Token t;
+}
+{
+    ( t = <SUBTRACAO> { inserirTokenUnico(reservada, "SUBTRACAO", t); }
+    | t = <NOT> { inserirTokenUnico(reservada, "NOT", t); } ) fator()
 |   valor_base()
 }
 
 
 // Base da recursão das expressões. Define os elementos atômicos.
 void valor_base():
-{}
 {
-	<INTEIRO>
-|   <REAL>
+	Token t;
+}
+{
+	t = <INTEIRO> { inserirTokenUnico(simbolo, "INTEIRO", t); }
+|   t = <REAL> { inserirTokenUnico(simbolo, "REAL", t); }
 // 18. USO DE STRINGS
-|   <STRING>
-|   <TOKEN_TRUE>
-|   <TOKEN_FALSE>
-|   <IDENTIFICADOR>
+|   t = <STRING> { inserirTokenUnico(simbolo, "STRING", t); }
+|   t = <TOKEN_TRUE> { inserirTokenUnico(reservada, "TRUE", t); }
+|   t = <TOKEN_FALSE> { inserirTokenUnico(reservada, "FALSE", t); }
+|   t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
 // 19. USO DE PARÊNTESES
-|	<ABRE_PARENTESIS> expressao() <FECHA_PARENTESIS>
+|	t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } expressao()
+	t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
 }
 
 // Função para declarar variáveis
@@ -395,16 +469,32 @@ void declarar_variavel():
     Token t;
 }
 {
-    ( <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    ( t = <TOKEN_INT> { inserirTokenUnico(reservada, "INTEGER", t); }
+    | t = <TOKEN_FLOAT> { inserirTokenUnico(reservada, "FLOAT", t); }
+    | t = <TOKEN_CHAR> { inserirTokenUnico(reservada, "CHAR", t); }
+    | t = <TOKEN_BOOL> { inserirTokenUnico(reservada, "BOOLEAN", t); }
+    | t = <TOKEN_DOUBLE> { inserirTokenUnico(reservada, "DOUBLE", t); } )
+
     t = <IDENTIFICADOR> {
-        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
-        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+        if(t.image.length() > MAX){
+        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+       	}
+        else{
+        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
     }
-    ( <VIRGULA> t = <IDENTIFICADOR> {
-        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
-        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+    ( t = <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); } 
+
+    t = <IDENTIFICADOR> {
+        if(t.image.length() > MAX){
+        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
     })*
-    <PONTO_VIRGULA>
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+    					  System.out.println("Declarar variável");}
 }
 
 // Função para chamada de funções
@@ -414,17 +504,27 @@ void chamar_funcao():
 }
 {
     t = <IDENTIFICADOR> {
-        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
-        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+        if(t.image.length() > MAX){
+        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
     }
-    <ABRE_PARENTESIS> ( lista_de_argumentos() )? <FECHA_PARENTESIS> <PONTO_VIRGULA>
+    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } ( lista_de_argumentos() )?
+    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+    						System.out.println("Chamada de função"); }
 }
 
 // Regra auxiliar para lista de argumentos em chamadas de função
 void lista_de_argumentos():
-{}
 {
-    expressao() ( <VIRGULA> expressao() )*
+	Token t;
+}
+{
+    expressao() (
+    t = <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); } expressao() )*
 }
 
 
@@ -435,15 +535,27 @@ void criar_funcoes():
     Token t;
 }
 {
-    ( <TOKEN_VOID> | <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    ( <TOKEN_VOID>
+    | <TOKEN_INT>
+    | <TOKEN_FLOAT>
+    | <TOKEN_CHAR>
+    | <TOKEN_BOOL>
+    | <TOKEN_DOUBLE> )
+    
     t = <IDENTIFICADOR> {
-        if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);}
-        else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+        if(t.image.length() > MAX){
+        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+        else{
+        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+        }
     }
-    <ABRE_PARENTESIS> ( lista_de_parametros() )? <FECHA_PARENTESIS>
-    <ABRE_CHAVES>
+    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } ( lista_de_parametros() )?
+    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+    t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); }
         bloco_de_comandos()
-    <FECHA_CHAVES>
+    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHAS_CHAVES", t);
+    					System.out.println("Função criada");}
 }
 
 // Regra auxiliar para lista de parâmetros em definições de função
@@ -452,15 +564,32 @@ void lista_de_parametros():
     Token t;
 }
 {
-    ( <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    ( t = <TOKEN_INT> { inserirTokenUnico(reservada, "INTEGER", t); }
+    | t = <TOKEN_FLOAT> { inserirTokenUnico(reservada, "FLOAT", t); }
+    | t = <TOKEN_CHAR> { inserirTokenUnico(reservada, "CHAR", t); }
+    | t = <TOKEN_BOOL> { inserirTokenUnico(reservada, "BOOLEAN", t); }
+    | t = <TOKEN_DOUBLE> { inserirTokenUnico(reservada, "DOUBLE", t); } )
     t = <IDENTIFICADOR> {
-         if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
-         else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+         if(t.image.length() > MAX){
+         	System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
+         }
+         else{
+         	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+         }
     }
-    ( <VIRGULA> ( <TOKEN_INT> | <TOKEN_FLOAT> | <TOKEN_CHAR> | <TOKEN_BOOL> | <TOKEN_DOUBLE> )
+    ( <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); } (
+      <TOKEN_INT> { inserirTokenUnico(reservada, "INTEGER", t); }
+    | <TOKEN_FLOAT> { inserirTokenUnico(reservada, "FLOAT", t); }
+    | <TOKEN_CHAR> { inserirTokenUnico(reservada, "CHAR", t); }
+    | <TOKEN_BOOL> { inserirTokenUnico(reservada, "BOOLEAN", t); }
+    | <TOKEN_DOUBLE> { inserirTokenUnico(reservada, "DOUBLE", t); } )
         t = <IDENTIFICADOR> {
-             if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
-             else{ inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
+             if(t.image.length() > MAX){
+             	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+             }
+             else{
+             	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+             }
         }
     )*
 }
