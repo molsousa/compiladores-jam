@@ -4,6 +4,37 @@ import java.util.Scanner;
 import java.util.LinkedList;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileWriter;
+
+class No {
+    String tipo;
+    String valor;
+    LinkedList<No> filhos;
+
+    public No(String tipo) {
+        this.tipo = tipo;
+        this.valor = null;
+        this.filhos = new LinkedList<>();
+    }
+
+    public No(String tipo, String valor) {
+        this.tipo = tipo;
+        this.valor = valor;
+        this.filhos = new LinkedList<>();
+    }
+
+    public void adicionarFilho(No filho) {
+        if (filho != null) {
+            this.filhos.add(filho);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "No(Tipo=" + tipo + ", Valor=" + valor + ")";
+    }
+}
 
 class InfoToken {
     String tipo;
@@ -25,6 +56,35 @@ class InfoToken {
 }
 
 public class Lexico implements LexicoConstants {
+    public void escreverArvoresEmArquivo(LinkedList<No> arvores, String nomeArquivo) throws IOException {
+        FileWriter writer = new FileWriter(nomeArquivo);
+        writer.write("--- IN\u00cdCIO DA \u00c1RVORE SINT\u00c1TICA ---\n\n");
+        for (No raiz : arvores) {
+            escreverNoRecursivo(raiz, 0, writer);
+            writer.write("\n");
+        }
+        writer.write("--- FIM DA \u00c1RVORE SINT\u00c1TICA ---\n");
+        writer.close();
+    }
+
+    private void escreverNoRecursivo(No no, int nivel, java.io.FileWriter writer) throws IOException {
+        if (no == null) return;
+
+        for (int i = 0; i < nivel; i++) {
+            writer.write("  ");
+        }
+
+        writer.write("- " + no.tipo);
+        if (no.valor != null) {
+            writer.write(": <" + no.valor + ">");
+        }
+        writer.write("\n");
+
+        for (No filho : no.filhos) {
+            escreverNoRecursivo(filho, nivel + 1, writer);
+        }
+    }
+
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
     private static final int MAX = 32;
@@ -74,14 +134,18 @@ public class Lexico implements LexicoConstants {
         }
     }
 
-// Sintático
-
-
 // 1. BIBLIOTECAS
-  final public void inicializar_programa() throws ParseException {
+  final public void inicializar_programa() throws ParseException {LinkedList<No> arvores = new LinkedList<>();
+    No arvoreAtual;
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case TOKEN_VOID:
+      case TOKEN_INT:
+      case TOKEN_FLOAT:
+      case TOKEN_CHAR:
+      case TOKEN_BOOL:
+      case TOKEN_DOUBLE:
       case TOKEN_IMPORT:{
         ;
         break;
@@ -90,43 +154,53 @@ public class Lexico implements LexicoConstants {
         jj_la1[0] = jj_gen;
         break label_1;
       }
-      inclusao_biblioteca();
-    }
-    label_2:
-    while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case TOKEN_IMPORT:{
+        arvoreAtual = inclusao_biblioteca();
+if(arvoreAtual != null) arvores.add(arvoreAtual);
+        break;
+        }
       case TOKEN_VOID:
       case TOKEN_INT:
       case TOKEN_FLOAT:
       case TOKEN_CHAR:
       case TOKEN_BOOL:
       case TOKEN_DOUBLE:{
-        ;
+        arvoreAtual = criar_funcoes();
+if(arvoreAtual != null) arvores.add(arvoreAtual);
         break;
         }
       default:
         jj_la1[1] = jj_gen;
-        break label_2;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-      criar_funcoes();
     }
     jj_consume_token(0);
-System.out.println("Programa finalizado.");
+System.out.println("An\u00e1lise sint\u00e1tica finalizada");
+            try {
+                escreverArvoresEmArquivo(arvores, "arvores_fonte1.txt");
+                System.out.println("Arquivo arvores_fonte1.txt gerado.");
+            }
+            catch (java.io.IOException e) {
+                System.err.println("Erro ao escrever o arquivo da \u00e1rvore: " + e.getMessage());
+            }
 }
 
-  final public void inclusao_biblioteca() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_IMPORT);
-inserirTokenUnico(reservada, "IMPORT", t);
+  final public No inclusao_biblioteca() throws ParseException {Token t;
+        No noImport = new No("IMPORT");
+    jj_consume_token(TOKEN_IMPORT);
     t = jj_consume_token(STRING);
-inserirTokenUnico(simbolo, "STRING", t);
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-                                         System.out.println("Biblioteca importada");
+noImport.adicionarFilho(new No("BIBLIOTECA", t.image));
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noImport;}
+    throw new Error("Missing return statement in function");
 }
 
 // 2. BLOCO DE COMANDOS
-  final public void bloco_de_comandos() throws ParseException {
-    label_3:
+  final public No bloco_de_comandos() throws ParseException {No noBloco = new No("BLOCO_COMANDOS");
+    No cmd;
+    label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case TOKEN_IF:
@@ -147,60 +221,74 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
         }
       default:
         jj_la1[2] = jj_gen;
-        break label_3;
+        break label_2;
       }
-      comando();
+      // Para cada comando encontrado, captura seu nó e adiciona ao bloco
+                cmd = comando();
+noBloco.adicionarFilho(cmd);
     }
+{if ("" != null) return noBloco;}
+    throw new Error("Missing return statement in function");
 }
 
 // Regra unica de comando.
-  final public void comando() throws ParseException {Token t;
+  final public No comando() throws ParseException {No noComando;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:
     case TOKEN_FLOAT:
     case TOKEN_CHAR:
     case TOKEN_BOOL:
     case TOKEN_DOUBLE:{
-      declarar_variavel();
+      // 3. DECLARAÇÃO DE VARIÁVEIS
+              noComando = declarar_variavel();
+{if ("" != null) return noComando;}
       break;
       }
     default:
       jj_la1[3] = jj_gen;
       if (jj_2_1(2)) {
-        atribuicao();
+        noComando = atribuicao();
+{if ("" != null) return noComando;}
       } else {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case IDENTIFICADOR:{
-          chamar_funcao();
+          noComando = chamar_funcao();
+{if ("" != null) return noComando;}
           break;
           }
         case TOKEN_IF:{
-          if_else();
+          noComando = if_else();
+{if ("" != null) return noComando;}
           break;
           }
         case TOKEN_WHILE:{
-          laco_while();
+          noComando = laco_while();
+{if ("" != null) return noComando;}
           break;
           }
         case TOKEN_FOR:{
-          laco_for();
+          noComando = laco_for();
+{if ("" != null) return noComando;}
           break;
           }
         case TOKEN_RETURN:{
-          retorno();
+          noComando = retorno();
+{if ("" != null) return noComando;}
           break;
           }
         case TOKEN_WRITE:{
-          comando_escrita();
+          noComando = comando_escrita();
+{if ("" != null) return noComando;}
           break;
           }
         case TOKEN_READ:{
-          comando_leitura();
+          noComando = comando_leitura();
+{if ("" != null) return noComando;}
           break;
           }
         case PONTO_VIRGULA:{
-          t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+          jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return new No("COMANDO_VAZIO");}
           break;
           }
         default:
@@ -210,79 +298,84 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
         }
       }
     }
+    throw new Error("Missing return statement in function");
 }
 
 // Estrutura condicional if/else.
-  final public void if_else() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_IF);
-inserirTokenUnico(reservada, "IF", t);
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
-    expressao();
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(ABRE_CHAVES);
-inserirTokenUnico(reservada, "ABRE_CHAVES", t);
-    bloco_de_comandos();
-    t = jj_consume_token(FECHA_CHAVES);
-inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-                                                System.out.println("If criado");
+  final public No if_else() throws ParseException {No noIf = new No("ESTRUTURA_IF");
+    No condicao;
+    No blocoPrincipal;
+    No blocoSenao = null;
+    jj_consume_token(TOKEN_IF);
+    jj_consume_token(ABRE_PARENTESIS);
+    condicao = expressao();
+noIf.adicionarFilho(condicao);
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(ABRE_CHAVES);
+    blocoPrincipal = bloco_de_comandos();
+noIf.adicionarFilho(blocoPrincipal);
+    jj_consume_token(FECHA_CHAVES);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_ELSE:{
-      senao();
+      blocoSenao = senao();
+noIf.adicionarFilho(blocoSenao);
       break;
       }
     default:
       jj_la1[5] = jj_gen;
       ;
     }
+{if ("" != null) return noIf;}
+    throw new Error("Missing return statement in function");
 }
 
-  final public void senao() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_ELSE);
-inserirTokenUnico(reservada, "ELSE", t);
-    t = jj_consume_token(ABRE_CHAVES);
-inserirTokenUnico(reservada, "ABRE_CHAVES", t);
-    bloco_de_comandos();
-    t = jj_consume_token(FECHA_CHAVES);
-inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-                                                System.out.println("Else criado");
+  final public No senao() throws ParseException {No noElse = new No("BLOCO_ELSE");
+    No bloco;
+    jj_consume_token(TOKEN_ELSE);
+    jj_consume_token(ABRE_CHAVES);
+    bloco = bloco_de_comandos();
+noElse.adicionarFilho(bloco);
+    jj_consume_token(FECHA_CHAVES);
+{if ("" != null) return noElse;}
+    throw new Error("Missing return statement in function");
 }
 
 // Laço de repetição while.
-  final public void laco_while() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_WHILE);
-inserirTokenUnico(reservada, "WHILE", t);
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
-    expressao();
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(ABRE_CHAVES);
-inserirTokenUnico(reservada, "ABRE_CHAVES", t);
-    bloco_de_comandos();
-    t = jj_consume_token(FECHA_CHAVES);
-inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-                                         System.out.println("While criado");
+  final public No laco_while() throws ParseException {No noWhile = new No("LACO_WHILE");
+        No condicao;
+        No bloco;
+    jj_consume_token(TOKEN_WHILE);
+    jj_consume_token(ABRE_PARENTESIS);
+    condicao = expressao();
+noWhile.adicionarFilho(condicao);
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(ABRE_CHAVES);
+    bloco = bloco_de_comandos();
+noWhile.adicionarFilho(bloco);
+    jj_consume_token(FECHA_CHAVES);
+{if ("" != null) return noWhile;}
+    throw new Error("Missing return statement in function");
 }
 
 // Laço de repetição for.
-  final public void laco_for() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_FOR);
-inserirTokenUnico(reservada, "FOR", t);
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
+  final public No laco_for() throws ParseException {No noFor = new No("LACO_FOR");
+        No inicializacao = null;
+        No condicao = null;
+        No incremento = null;
+        No bloco;
+    jj_consume_token(TOKEN_FOR);
+    jj_consume_token(ABRE_PARENTESIS);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IDENTIFICADOR:{
-      atribuicao_simples();
+      inicializacao = atribuicao_simples();
       break;
       }
     default:
       jj_la1[6] = jj_gen;
       ;
     }
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+noFor.adicionarFilho(inicializacao != null ? inicializacao : new No("INICIALIZACAO_VAZIA"));
+    jj_consume_token(PONTO_VIRGULA);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_TRUE:
     case TOKEN_FALSE:
@@ -293,64 +386,64 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
     case REAL:
     case IDENTIFICADOR:
     case STRING:{
-      expressao();
+      condicao = expressao();
       break;
       }
     default:
       jj_la1[7] = jj_gen;
       ;
     }
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+noFor.adicionarFilho(condicao != null ? condicao : new No("CONDICAO_VAZIA"));
+    jj_consume_token(PONTO_VIRGULA);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IDENTIFICADOR:{
-      atribuicao_simples();
+      incremento = atribuicao_simples();
       break;
       }
     default:
       jj_la1[8] = jj_gen;
       ;
     }
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(ABRE_CHAVES);
-inserirTokenUnico(reservada, "ABRE_CHAVES", t);
-    bloco_de_comandos();
-    t = jj_consume_token(FECHA_CHAVES);
-inserirTokenUnico(reservada, "FECHA_CHAVES", t);
+noFor.adicionarFilho(incremento != null ? incremento : new No("INCREMENTO_VAZIO"));
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(ABRE_CHAVES);
+    bloco = bloco_de_comandos();
+noFor.adicionarFilho(bloco);
+    jj_consume_token(FECHA_CHAVES);
+{if ("" != null) return noFor;}
+    throw new Error("Missing return statement in function");
 }
 
 // Comando de escrita de dados.
-  final public void comando_escrita() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_WRITE);
-inserirTokenUnico(reservada, "WRITE", t);
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
-    lista_de_argumentos();
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+  final public No comando_escrita() throws ParseException {No noWrite = new No("ESCRITA");
+        No args;
+    jj_consume_token(TOKEN_WRITE);
+    jj_consume_token(ABRE_PARENTESIS);
+    args = lista_de_argumentos();
+noWrite.adicionarFilho(args);
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noWrite;}
+    throw new Error("Missing return statement in function");
 }
 
 // Comando de leitura de dados.
-  final public void comando_leitura() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_READ);
-inserirTokenUnico(reservada, "READ", t);
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
+  final public No comando_leitura() throws ParseException {Token t;
+        No noRead = new No("LEITURA");
+    jj_consume_token(TOKEN_READ);
+    jj_consume_token(ABRE_PARENTESIS);
     t = jj_consume_token(IDENTIFICADOR);
-inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+noRead.adicionarFilho(new No("IDENTIFICADOR", t.image));
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noRead;}
+    throw new Error("Missing return statement in function");
 }
 
 // Comando de retorno de função.
-  final public void retorno() throws ParseException {Token t;
-    t = jj_consume_token(TOKEN_RETURN);
-inserirTokenUnico(reservada, "RETURN", t);
+  final public No retorno() throws ParseException {No noReturn = new No("RETORNO");
+        No expr = null;
+    jj_consume_token(TOKEN_RETURN);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_TRUE:
     case TOKEN_FALSE:
@@ -361,48 +454,58 @@ inserirTokenUnico(reservada, "RETURN", t);
     case REAL:
     case IDENTIFICADOR:
     case STRING:{
-      expressao();
+      expr = expressao();
       break;
       }
     default:
       jj_la1[9] = jj_gen;
       ;
     }
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-                                          System.out.println("Retorno");
+if(expr != null) noReturn.adicionarFilho(expr);
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noReturn;}
+    throw new Error("Missing return statement in function");
 }
 
 // 11. ATRIBUIÇÕES
-  final public void atribuicao() throws ParseException {Token t;
+  final public No atribuicao() throws ParseException {Token t;
+        No noAtrib = new No("ATRIBUICAO");
+        No expr;
     t = jj_consume_token(IDENTIFICADOR);
-inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-    t = jj_consume_token(ATRIBUICAO);
-inserirTokenUnico(reservada, "ATRIBUICAO", t);
-    expressao();
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-                                                System.out.println("Atribui\u00e7\u00e3o");
+noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
+    jj_consume_token(ATRIBUICAO);
+    expr = expressao();
+noAtrib.adicionarFilho(expr);
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noAtrib;}
+    throw new Error("Missing return statement in function");
 }
 
 // Regra auxiliar para o laço 'for', que é uma atribuição sem o ponto e vírgula final.
-  final public void atribuicao_simples() throws ParseException {Token t;
+  final public No atribuicao_simples() throws ParseException {Token t;
+        No noAtrib = new No("ATRIBUICAO_SIMPLES");
+        No expr;
     t = jj_consume_token(IDENTIFICADOR);
-inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-    t = jj_consume_token(ATRIBUICAO);
-inserirTokenUnico(reservada, "ATRIBUICAO", t);
-    expressao();
+noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
+    jj_consume_token(ATRIBUICAO);
+    expr = expressao();
+noAtrib.adicionarFilho(expr);
+{if ("" != null) return noAtrib;}
+    throw new Error("Missing return statement in function");
 }
 
-// Nível mais alto da expressão. Começa com o operador de menor precedência (OR).
-  final public void expressao() throws ParseException {
-    expressao_or();
+// Nível mais alto da expressão.
+  final public No expressao() throws ParseException {No expr;
+    expr = expressao_or();
+{if ("" != null) return expr;}
+    throw new Error("Missing return statement in function");
 }
 
 // 12. OPERADORES LÓGICOS (OR)
-  final public void expressao_or() throws ParseException {Token t;
-    expressao_and();
-    label_4:
+  final public No expressao_or() throws ParseException {Token t;
+        No esq, dir;
+    esq = expressao_and();
+    label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case OR:{
@@ -411,18 +514,24 @@ inserirTokenUnico(reservada, "ATRIBUICAO", t);
         }
       default:
         jj_la1[10] = jj_gen;
-        break label_4;
+        break label_3;
       }
       t = jj_consume_token(OR);
-inserirTokenUnico(reservada, "OR", t);
-      expressao_and();
+      dir = expressao_and();
+No opNode = new No("OPERACAO", t.image);
+        opNode.adicionarFilho(esq);
+        opNode.adicionarFilho(dir);
+        esq = opNode;
     }
+{if ("" != null) return esq;}
+    throw new Error("Missing return statement in function");
 }
 
 // 13. OPERADORES LÓGICOS (AND)
-  final public void expressao_and() throws ParseException {Token t;
-    expressao_relacional();
-    label_5:
+  final public No expressao_and() throws ParseException {Token t;
+        No esq, dir;
+    esq = expressao_relacional();
+    label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case AND:{
@@ -431,17 +540,23 @@ inserirTokenUnico(reservada, "OR", t);
         }
       default:
         jj_la1[11] = jj_gen;
-        break label_5;
+        break label_4;
       }
       t = jj_consume_token(AND);
-inserirTokenUnico(reservada, "AND", t);
-      expressao_relacional();
+      dir = expressao_relacional();
+No opNode = new No("OPERACAO", t.image);
+        opNode.adicionarFilho(esq);
+        opNode.adicionarFilho(dir);
+        esq = opNode;
     }
+{if ("" != null) return esq;}
+    throw new Error("Missing return statement in function");
 }
 
 // 14. OPERADORES RELACIONAIS (==, !=, <, >, <=, >=)
-  final public void expressao_relacional() throws ParseException {Token t;
-    expressao_aritmetica();
+  final public No expressao_relacional() throws ParseException {Token t;
+        No esq, dir;
+    esq = expressao_aritmetica();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IGUAL:
     case DIFERENTE:
@@ -452,32 +567,26 @@ inserirTokenUnico(reservada, "AND", t);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case IGUAL:{
         t = jj_consume_token(IGUAL);
-inserirTokenUnico(reservada, "IGUAL", t);
         break;
         }
       case DIFERENTE:{
         t = jj_consume_token(DIFERENTE);
-inserirTokenUnico(reservada, "DIFERENTE", t);
         break;
         }
       case MENOR:{
         t = jj_consume_token(MENOR);
-inserirTokenUnico(reservada, "MENOR", t);
         break;
         }
       case MAIOR:{
         t = jj_consume_token(MAIOR);
-inserirTokenUnico(reservada, "MAIOR", t);
         break;
         }
       case MENOR_IGUAL:{
         t = jj_consume_token(MENOR_IGUAL);
-inserirTokenUnico(reservada, "MENOR_IGUAL", t);
         break;
         }
       case MAIOR_IGUAL:{
         t = jj_consume_token(MAIOR_IGUAL);
-inserirTokenUnico(reservada, "MAIOR_IGUAL", t);
         break;
         }
       default:
@@ -485,19 +594,26 @@ inserirTokenUnico(reservada, "MAIOR_IGUAL", t);
         jj_consume_token(-1);
         throw new ParseException();
       }
-      expressao_aritmetica();
+      dir = expressao_aritmetica();
+No opNode = new No("OPERACAO", t.image);
+          opNode.adicionarFilho(esq);
+          opNode.adicionarFilho(dir);
+          esq = opNode;
       break;
       }
     default:
       jj_la1[13] = jj_gen;
       ;
     }
+{if ("" != null) return esq;}
+    throw new Error("Missing return statement in function");
 }
 
 // 15. OPERADORES ARITMÉTICOS (+, -)
-  final public void expressao_aritmetica() throws ParseException {Token t;
-    termo();
-    label_6:
+  final public No expressao_aritmetica() throws ParseException {Token t;
+        No esq, dir;
+    esq = termo();
+    label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case ADICAO:
@@ -507,17 +623,15 @@ inserirTokenUnico(reservada, "MAIOR_IGUAL", t);
         }
       default:
         jj_la1[14] = jj_gen;
-        break label_6;
+        break label_5;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case ADICAO:{
         t = jj_consume_token(ADICAO);
-inserirTokenUnico(reservada, "ADICAO", t);
         break;
         }
       case SUBTRACAO:{
         t = jj_consume_token(SUBTRACAO);
-inserirTokenUnico(reservada, "SUBTRACAO", t);
         break;
         }
       default:
@@ -525,14 +639,21 @@ inserirTokenUnico(reservada, "SUBTRACAO", t);
         jj_consume_token(-1);
         throw new ParseException();
       }
-      termo();
+      dir = termo();
+No opNode = new No("OPERACAO", t.image);
+            opNode.adicionarFilho(esq);
+            opNode.adicionarFilho(dir);
+            esq = opNode;
     }
+{if ("" != null) return esq;}
+    throw new Error("Missing return statement in function");
 }
 
 // 16. OPERADORES ARITMÉTICOS (*, /)
-  final public void termo() throws ParseException {Token t;
-    fator();
-    label_7:
+  final public No termo() throws ParseException {Token t;
+        No esq, dir;
+    esq = fator();
+    label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case MULTIPLICACAO:
@@ -542,17 +663,15 @@ inserirTokenUnico(reservada, "SUBTRACAO", t);
         }
       default:
         jj_la1[16] = jj_gen;
-        break label_7;
+        break label_6;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case MULTIPLICACAO:{
         t = jj_consume_token(MULTIPLICACAO);
-inserirTokenUnico(reservada, "MULTIPLICACAO", t);
         break;
         }
       case DIVISAO:{
         t = jj_consume_token(DIVISAO);
-inserirTokenUnico(reservada, "DIVISAO", t);
         break;
         }
       default:
@@ -560,24 +679,34 @@ inserirTokenUnico(reservada, "DIVISAO", t);
         jj_consume_token(-1);
         throw new ParseException();
       }
-      fator();
+      dir = fator();
+No opNode = new No("OPERACAO", t.image);
+            opNode.adicionarFilho(esq);
+            opNode.adicionarFilho(dir);
+            esq = opNode;
     }
+{if ("" != null) return esq;}
+    throw new Error("Missing return statement in function");
 }
 
 // 17. OPERADORES UNÁRIOS (!, -)
-  final public void fator() throws ParseException {Token t;
+  final public No fator() throws ParseException {Token t;
+        No no;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case SUBTRACAO:
     case NOT:{
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case SUBTRACAO:{
         t = jj_consume_token(SUBTRACAO);
-inserirTokenUnico(reservada, "SUBTRACAO", t);
+No opUnario = new No("OP_UNARIO", t.image);
+no = fator();
+opUnario.adicionarFilho(no);
+{if ("" != null) return opUnario;}
         break;
         }
       case NOT:{
         t = jj_consume_token(NOT);
-inserirTokenUnico(reservada, "NOT", t);
+No opUnario = new No("OP_UNARIO", t.image); no = fator(); opUnario.adicionarFilho(no); {if ("" != null) return opUnario;}
         break;
         }
       default:
@@ -585,7 +714,6 @@ inserirTokenUnico(reservada, "NOT", t);
         jj_consume_token(-1);
         throw new ParseException();
       }
-      fator();
       break;
       }
     case TOKEN_TRUE:
@@ -595,7 +723,8 @@ inserirTokenUnico(reservada, "NOT", t);
     case REAL:
     case IDENTIFICADOR:
     case STRING:{
-      valor_base();
+      no = valor_base();
+{if ("" != null) return no;}
       break;
       }
     default:
@@ -603,47 +732,47 @@ inserirTokenUnico(reservada, "NOT", t);
       jj_consume_token(-1);
       throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
 }
 
 // Base da recursão das expressões. Define os elementos atômicos.
-  final public void valor_base() throws ParseException {Token t;
+  final public No valor_base() throws ParseException {Token t;
+    No no;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case INTEIRO:{
       t = jj_consume_token(INTEIRO);
-inserirTokenUnico(simbolo, "INTEIRO", t);
+no = new No("INTEIRO", t.image);
       break;
       }
     case REAL:{
       t = jj_consume_token(REAL);
-inserirTokenUnico(simbolo, "REAL", t);
+no = new No("REAL", t.image);
       break;
       }
     case STRING:{
       t = jj_consume_token(STRING);
-inserirTokenUnico(simbolo, "STRING", t);
+no = new No("STRING", t.image);
       break;
       }
     case TOKEN_TRUE:{
       t = jj_consume_token(TOKEN_TRUE);
-inserirTokenUnico(reservada, "TRUE", t);
+no = new No("BOOLEANO", t.image);
       break;
       }
     case TOKEN_FALSE:{
       t = jj_consume_token(TOKEN_FALSE);
-inserirTokenUnico(reservada, "FALSE", t);
+no = new No("BOOLEANO", t.image);
       break;
       }
     case IDENTIFICADOR:{
       t = jj_consume_token(IDENTIFICADOR);
-inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+no = new No("IDENTIFICADOR", t.image);
       break;
       }
     case ABRE_PARENTESIS:{
-      t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
-      expressao();
-      t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
+      jj_consume_token(ABRE_PARENTESIS);
+      no = expressao();
+      jj_consume_token(FECHA_PARENTESIS);
       break;
       }
     default:
@@ -651,34 +780,32 @@ inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
       jj_consume_token(-1);
       throw new ParseException();
     }
+{if ("" != null) return no;}
+    throw new Error("Missing return statement in function");
 }
 
 // Função para declarar variáveis
-  final public void declarar_variavel() throws ParseException {Token t;
+  final public No declarar_variavel() throws ParseException {Token t, tipoToken;
+    No noDecl = new No("DECLARACAO_VARIAVEL");
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:{
-      t = jj_consume_token(TOKEN_INT);
-inserirTokenUnico(reservada, "INTEGER", t);
+      tipoToken = jj_consume_token(TOKEN_INT);
       break;
       }
     case TOKEN_FLOAT:{
-      t = jj_consume_token(TOKEN_FLOAT);
-inserirTokenUnico(reservada, "FLOAT", t);
+      tipoToken = jj_consume_token(TOKEN_FLOAT);
       break;
       }
     case TOKEN_CHAR:{
-      t = jj_consume_token(TOKEN_CHAR);
-inserirTokenUnico(reservada, "CHAR", t);
+      tipoToken = jj_consume_token(TOKEN_CHAR);
       break;
       }
     case TOKEN_BOOL:{
-      t = jj_consume_token(TOKEN_BOOL);
-inserirTokenUnico(reservada, "BOOLEAN", t);
+      tipoToken = jj_consume_token(TOKEN_BOOL);
       break;
       }
     case TOKEN_DOUBLE:{
-      t = jj_consume_token(TOKEN_DOUBLE);
-inserirTokenUnico(reservada, "DOUBLE", t);
+      tipoToken = jj_consume_token(TOKEN_DOUBLE);
       break;
       }
     default:
@@ -686,14 +813,13 @@ inserirTokenUnico(reservada, "DOUBLE", t);
       jj_consume_token(-1);
       throw new ParseException();
     }
+noDecl.adicionarFilho(new No("TIPO", tipoToken.image));
     t = jj_consume_token(IDENTIFICADOR);
-if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
+        if(t.image.length() > MAX){
+          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
         }
-        else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
-    label_8:
+    label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case VIRGULA:{
@@ -702,34 +828,30 @@ if(t.image.length() > MAX){
         }
       default:
         jj_la1[22] = jj_gen;
-        break label_8;
+        break label_7;
       }
-      t = jj_consume_token(VIRGULA);
-inserirTokenUnico(reservada, "VIRGULA", t);
+      jj_consume_token(VIRGULA);
       t = jj_consume_token(IDENTIFICADOR);
-if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
+noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
+          if(t.image.length() > MAX){
+            System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
+          }
     }
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-                                          System.out.println("Declarar vari\u00e1vel");
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noDecl;}
+    throw new Error("Missing return statement in function");
 }
 
 // Função para chamada de funções
-  final public void chamar_funcao() throws ParseException {Token t;
+  final public No chamar_funcao() throws ParseException {Token t;
+    No noChamada = new No("CHAMADA_FUNCAO");
+    No args = null;
     t = jj_consume_token(IDENTIFICADOR);
-if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+noChamada.adicionarFilho(new No("IDENTIFICADOR", t.image));
+        if(t.image.length() > MAX){
+          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
         }
-        else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
+    jj_consume_token(ABRE_PARENTESIS);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_TRUE:
     case TOKEN_FALSE:
@@ -740,24 +862,26 @@ inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
     case REAL:
     case IDENTIFICADOR:
     case STRING:{
-      lista_de_argumentos();
+      args = lista_de_argumentos();
       break;
       }
     default:
       jj_la1[23] = jj_gen;
       ;
     }
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-                                                System.out.println("Chamada de fun\u00e7\u00e3o");
+noChamada.adicionarFilho(args != null ? args : new No("LISTA_ARGUMENTOS_VAZIA"));
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(PONTO_VIRGULA);
+{if ("" != null) return noChamada;}
+    throw new Error("Missing return statement in function");
 }
 
 // Regra auxiliar para lista de argumentos em chamadas de função
-  final public void lista_de_argumentos() throws ParseException {Token t;
-    expressao();
-    label_9:
+  final public No lista_de_argumentos() throws ParseException {No noLista = new No("LISTA_ARGUMENTOS");
+        No expr;
+    expr = expressao();
+noLista.adicionarFilho(expr);
+    label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case VIRGULA:{
@@ -766,39 +890,44 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
         }
       default:
         jj_la1[24] = jj_gen;
-        break label_9;
+        break label_8;
       }
-      t = jj_consume_token(VIRGULA);
-inserirTokenUnico(reservada, "VIRGULA", t);
-      expressao();
+      jj_consume_token(VIRGULA);
+      expr = expressao();
+noLista.adicionarFilho(expr);
     }
+{if ("" != null) return noLista;}
+    throw new Error("Missing return statement in function");
 }
 
 // 20. DEFINIÇÃO DE FUNÇÕES
-  final public void criar_funcoes() throws ParseException {Token t;
+  final public No criar_funcoes() throws ParseException {Token t, tipoToken;
+    No noFuncao = new No("DEFINICAO_FUNCAO");
+    No params = null;
+    No bloco;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_VOID:{
-      jj_consume_token(TOKEN_VOID);
+      tipoToken = jj_consume_token(TOKEN_VOID);
       break;
       }
     case TOKEN_INT:{
-      jj_consume_token(TOKEN_INT);
+      tipoToken = jj_consume_token(TOKEN_INT);
       break;
       }
     case TOKEN_FLOAT:{
-      jj_consume_token(TOKEN_FLOAT);
+      tipoToken = jj_consume_token(TOKEN_FLOAT);
       break;
       }
     case TOKEN_CHAR:{
-      jj_consume_token(TOKEN_CHAR);
+      tipoToken = jj_consume_token(TOKEN_CHAR);
       break;
       }
     case TOKEN_BOOL:{
-      jj_consume_token(TOKEN_BOOL);
+      tipoToken = jj_consume_token(TOKEN_BOOL);
       break;
       }
     case TOKEN_DOUBLE:{
-      jj_consume_token(TOKEN_DOUBLE);
+      tipoToken = jj_consume_token(TOKEN_DOUBLE);
       break;
       }
     default:
@@ -806,64 +935,58 @@ inserirTokenUnico(reservada, "VIRGULA", t);
       jj_consume_token(-1);
       throw new ParseException();
     }
+noFuncao.adicionarFilho(new No("TIPO_RETORNO", tipoToken.image));
     t = jj_consume_token(IDENTIFICADOR);
-if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+noFuncao.adicionarFilho(new No("IDENTIFICADOR", t.image));
+        if(t.image.length() > MAX){
+          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
         }
-        else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
-    t = jj_consume_token(ABRE_PARENTESIS);
-inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
+    jj_consume_token(ABRE_PARENTESIS);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:
     case TOKEN_FLOAT:
     case TOKEN_CHAR:
     case TOKEN_BOOL:
     case TOKEN_DOUBLE:{
-      lista_de_parametros();
+      params = lista_de_parametros();
       break;
       }
     default:
       jj_la1[26] = jj_gen;
       ;
     }
-    t = jj_consume_token(FECHA_PARENTESIS);
-inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
-    t = jj_consume_token(ABRE_CHAVES);
-inserirTokenUnico(reservada, "ABRE_CHAVES", t);
-    bloco_de_comandos();
-    t = jj_consume_token(FECHA_CHAVES);
-inserirTokenUnico(reservada, "FECHAS_CHAVES", t);
-                                        System.out.println("Fun\u00e7\u00e3o criada");
+noFuncao.adicionarFilho(params != null ? params : new No("LISTA_PARAMETROS_VAZIA"));
+    jj_consume_token(FECHA_PARENTESIS);
+    jj_consume_token(ABRE_CHAVES);
+    bloco = bloco_de_comandos();
+noFuncao.adicionarFilho(bloco);
+    jj_consume_token(FECHA_CHAVES);
+{if ("" != null) return noFuncao;}
+    throw new Error("Missing return statement in function");
 }
 
 // Regra auxiliar para lista de parâmetros em definições de função
-  final public void lista_de_parametros() throws ParseException {Token t;
+  final public No lista_de_parametros() throws ParseException {Token t, tipoToken;
+    No noLista = new No("LISTA_PARAMETROS");
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:{
-      t = jj_consume_token(TOKEN_INT);
-inserirTokenUnico(reservada, "INTEGER", t);
+      tipoToken = jj_consume_token(TOKEN_INT);
       break;
       }
     case TOKEN_FLOAT:{
-      t = jj_consume_token(TOKEN_FLOAT);
-inserirTokenUnico(reservada, "FLOAT", t);
+      tipoToken = jj_consume_token(TOKEN_FLOAT);
       break;
       }
     case TOKEN_CHAR:{
-      t = jj_consume_token(TOKEN_CHAR);
-inserirTokenUnico(reservada, "CHAR", t);
+      tipoToken = jj_consume_token(TOKEN_CHAR);
       break;
       }
     case TOKEN_BOOL:{
-      t = jj_consume_token(TOKEN_BOOL);
-inserirTokenUnico(reservada, "BOOLEAN", t);
+      tipoToken = jj_consume_token(TOKEN_BOOL);
       break;
       }
     case TOKEN_DOUBLE:{
-      t = jj_consume_token(TOKEN_DOUBLE);
-inserirTokenUnico(reservada, "DOUBLE", t);
+      tipoToken = jj_consume_token(TOKEN_DOUBLE);
       break;
       }
     default:
@@ -872,13 +995,14 @@ inserirTokenUnico(reservada, "DOUBLE", t);
       throw new ParseException();
     }
     t = jj_consume_token(IDENTIFICADOR);
-if(t.image.length() > MAX){
-                System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
-         }
-         else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-         }
-    label_10:
+No noParam = new No("PARAMETRO");
+        noParam.adicionarFilho(new No("TIPO", tipoToken.image));
+        noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
+        noLista.adicionarFilho(noParam);
+        if(t.image.length() > MAX){
+           System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+        }
+    label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case VIRGULA:{
@@ -887,34 +1011,28 @@ if(t.image.length() > MAX){
         }
       default:
         jj_la1[28] = jj_gen;
-        break label_10;
+        break label_9;
       }
       jj_consume_token(VIRGULA);
-inserirTokenUnico(reservada, "VIRGULA", t);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case TOKEN_INT:{
-        jj_consume_token(TOKEN_INT);
-inserirTokenUnico(reservada, "INTEGER", t);
+        tipoToken = jj_consume_token(TOKEN_INT);
         break;
         }
       case TOKEN_FLOAT:{
-        jj_consume_token(TOKEN_FLOAT);
-inserirTokenUnico(reservada, "FLOAT", t);
+        tipoToken = jj_consume_token(TOKEN_FLOAT);
         break;
         }
       case TOKEN_CHAR:{
-        jj_consume_token(TOKEN_CHAR);
-inserirTokenUnico(reservada, "CHAR", t);
+        tipoToken = jj_consume_token(TOKEN_CHAR);
         break;
         }
       case TOKEN_BOOL:{
-        jj_consume_token(TOKEN_BOOL);
-inserirTokenUnico(reservada, "BOOLEAN", t);
+        tipoToken = jj_consume_token(TOKEN_BOOL);
         break;
         }
       case TOKEN_DOUBLE:{
-        jj_consume_token(TOKEN_DOUBLE);
-inserirTokenUnico(reservada, "DOUBLE", t);
+        tipoToken = jj_consume_token(TOKEN_DOUBLE);
         break;
         }
       default:
@@ -923,13 +1041,16 @@ inserirTokenUnico(reservada, "DOUBLE", t);
         throw new ParseException();
       }
       t = jj_consume_token(IDENTIFICADOR);
-if(t.image.length() > MAX){
+No noParam1 = new No("PARAMETRO");
+          noParam.adicionarFilho(new No("TIPO", tipoToken.image));
+          noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
+          noLista.adicionarFilho(noParam);
+          if(t.image.length() > MAX){
                 System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-             }
-             else{
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-             }
+          }
     }
+{if ("" != null) return noLista;}
+    throw new Error("Missing return statement in function");
 }
 
   private boolean jj_2_1(int xla)
@@ -940,16 +1061,16 @@ if(t.image.length() > MAX){
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3_1()
- {
-    if (jj_3R_atribuicao_355_9_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_atribuicao_355_9_11()
+  private boolean jj_3R_atribuicao_462_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1()
+ {
+    if (jj_3R_atribuicao_462_9_10()) return true;
     return false;
   }
 
@@ -974,7 +1095,7 @@ if(t.image.length() > MAX){
 	   jj_la1_init_2();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x1000000,0x8f800,0x609f680,0x8f000,0x6010680,0x100,0x0,0x10060000,0x0,0x10060000,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x10000000,0x10060000,0x60000,0x8f000,0x0,0x10060000,0x0,0x8f800,0x8f000,0x8f000,0x0,0x8f000,};
+	   jj_la1_0 = new int[] {0x108f800,0x108f800,0x609f680,0x8f000,0x6010680,0x100,0x0,0x10060000,0x0,0x10060000,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x10000000,0x10060000,0x60000,0x8f000,0x0,0x10060000,0x0,0x8f800,0x8f000,0x8f000,0x0,0x8f000,};
 	}
 	private static void jj_la1_init_1() {
 	   jj_la1_1 = new int[] {0x0,0x0,0x10020000,0x0,0x10020000,0x0,0x10000000,0x3c400100,0x10000000,0x3c400100,0x200,0x80,0x7e,0x7e,0x0,0x0,0x0,0x0,0x100,0x3c400100,0x3c400000,0x0,0x40000,0x3c400100,0x40000,0x0,0x0,0x0,0x40000,0x0,};

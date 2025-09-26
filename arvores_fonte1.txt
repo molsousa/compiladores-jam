@@ -1,0 +1,121 @@
+--- INÍCIO DA ÁRVORE SINTÁTICA ---
+
+- IMPORT
+  - BIBLIOTECA: <"lexico.java">
+
+- DEFINICAO_FUNCAO
+  - TIPO_RETORNO: <void>
+  - IDENTIFICADOR: <main>
+  - LISTA_PARAMETROS_VAZIA
+  - BLOCO_COMANDOS
+    - DECLARACAO_VARIAVEL
+      - TIPO: <integer>
+      - IDENTIFICADOR: <x>
+    - DECLARACAO_VARIAVEL
+      - TIPO: <float>
+      - IDENTIFICADOR: <y>
+    - CHAMADA_FUNCAO
+      - IDENTIFICADOR: <soma>
+      - LISTA_ARGUMENTOS
+        - INTEIRO: <5>
+        - INTEIRO: <8>
+    - DECLARACAO_VARIAVEL
+      - TIPO: <double>
+      - IDENTIFICADOR: <z>
+
+- DEFINICAO_FUNCAO
+  - TIPO_RETORNO: <integer>
+  - IDENTIFICADOR: <soma>
+  - LISTA_PARAMETROS
+    - PARAMETRO
+      - TIPO: <integer>
+      - IDENTIFICADOR: <a>
+      - TIPO: <integer>
+      - IDENTIFICADOR: <b>
+    - PARAMETRO
+      - TIPO: <integer>
+      - IDENTIFICADOR: <a>
+      - TIPO: <integer>
+      - IDENTIFICADOR: <b>
+  - BLOCO_COMANDOS
+    - DECLARACAO_VARIAVEL
+      - TIPO: <integer>
+      - IDENTIFICADOR: <y>
+    - DECLARACAO_VARIAVEL
+      - TIPO: <integer>
+      - IDENTIFICADOR: <c>
+    - DECLARACAO_VARIAVEL
+      - TIPO: <integer>
+      - IDENTIFICADOR: <i>
+    - LACO_FOR
+      - ATRIBUICAO_SIMPLES
+        - IDENTIFICADOR: <i>
+        - INTEIRO: <5>
+      - OPERACAO: <<>
+        - IDENTIFICADOR: <i>
+        - INTEIRO: <5>
+      - ATRIBUICAO_SIMPLES
+        - IDENTIFICADOR: <i>
+        - OPERACAO: <+>
+          - IDENTIFICADOR: <i>
+          - INTEIRO: <1>
+      - BLOCO_COMANDOS
+        - ATRIBUICAO
+          - IDENTIFICADOR: <c>
+          - IDENTIFICADOR: <i>
+    - LACO_FOR
+      - INICIALIZACAO_VAZIA
+      - CONDICAO_VAZIA
+      - INCREMENTO_VAZIO
+      - BLOCO_COMANDOS
+    - LACO_WHILE
+      - OPERACAO: <==>
+        - IDENTIFICADOR: <i>
+        - INTEIRO: <5>
+      - BLOCO_COMANDOS
+    - ATRIBUICAO
+      - IDENTIFICADOR: <c>
+      - OPERACAO: <*>
+        - IDENTIFICADOR: <a>
+        - IDENTIFICADOR: <b>
+    - RETORNO
+      - IDENTIFICADOR: <c>
+
+- DEFINICAO_FUNCAO
+  - TIPO_RETORNO: <float>
+  - IDENTIFICADOR: <subtrai>
+  - LISTA_PARAMETROS
+    - PARAMETRO
+      - TIPO: <float>
+      - IDENTIFICADOR: <a>
+      - TIPO: <float>
+      - IDENTIFICADOR: <b>
+    - PARAMETRO
+      - TIPO: <float>
+      - IDENTIFICADOR: <a>
+      - TIPO: <float>
+      - IDENTIFICADOR: <b>
+  - BLOCO_COMANDOS
+    - ESTRUTURA_IF
+      - OPERACAO: <==>
+        - IDENTIFICADOR: <a>
+        - IDENTIFICADOR: <b>
+      - BLOCO_COMANDOS
+        - ATRIBUICAO
+          - IDENTIFICADOR: <a>
+          - OPERACAO: <+>
+            - IDENTIFICADOR: <a>
+            - IDENTIFICADOR: <b>
+        - RETORNO
+          - IDENTIFICADOR: <a>
+      - BLOCO_ELSE
+        - BLOCO_COMANDOS
+          - ATRIBUICAO
+            - IDENTIFICADOR: <b>
+            - OPERACAO: <+>
+              - IDENTIFICADOR: <b>
+              - IDENTIFICADOR: <a>
+    - RETORNO
+      - IDENTIFICADOR: <b>
+
+--- FIM DA ÁRVORE SINTÁTICA ---

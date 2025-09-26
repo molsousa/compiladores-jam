@@ -9,6 +9,37 @@ import java.util.Scanner;
 import java.util.LinkedList;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileWriter;
+
+class No {
+    String tipo;
+    String valor;
+    LinkedList<No> filhos;
+    
+    public No(String tipo) {
+        this.tipo = tipo;
+        this.valor = null;
+        this.filhos = new LinkedList<>();
+    }
+    
+    public No(String tipo, String valor) {
+        this.tipo = tipo;
+        this.valor = valor;
+        this.filhos = new LinkedList<>();
+    }
+
+    public void adicionarFilho(No filho) {
+        if (filho != null) {
+            this.filhos.add(filho);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "No(Tipo=" + tipo + ", Valor=" + valor + ")";
+    }
+}
 
 class InfoToken {
     String tipo;
@@ -31,6 +62,35 @@ class InfoToken {
 
 public class Lexico
 {
+    public void escreverArvoresEmArquivo(LinkedList<No> arvores, String nomeArquivo) throws IOException {
+        FileWriter writer = new FileWriter(nomeArquivo);
+        writer.write("--- INÍCIO DA ÁRVORE SINTÁTICA ---\n\n");
+        for (No raiz : arvores) {
+            escreverNoRecursivo(raiz, 0, writer);
+            writer.write("\n");
+        }
+        writer.write("--- FIM DA ÁRVORE SINTÁTICA ---\n");
+        writer.close();
+    }
+
+    private void escreverNoRecursivo(No no, int nivel, java.io.FileWriter writer) throws IOException {
+        if (no == null) return;
+
+        for (int i = 0; i < nivel; i++) {
+            writer.write("  ");
+        }
+
+        writer.write("- " + no.tipo);
+        if (no.valor != null) {
+            writer.write(": <" + no.valor + ">");
+        }
+        writer.write("\n");
+
+        for (No filho : no.filhos) {
+            escreverNoRecursivo(filho, nivel + 1, writer);
+        }
+    }
+  
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
     private static final int MAX = 32;
@@ -191,405 +251,525 @@ TOKEN:
     < SIMBOLO_INVALIDO: ~[] >
 }
 
-// Sintático
-
-
 // 1. BIBLIOTECAS
 void inicializar_programa():
-{}
 {
-	( inclusao_biblioteca() )*
-	( criar_funcoes() )*
-  	<EOF> { System.out.println("Programa finalizado."); }
+    LinkedList<No> arvores = new LinkedList<>();
+    No arvoreAtual;
+}
+{
+	(
+		( arvoreAtual = inclusao_biblioteca() { if(arvoreAtual != null) arvores.add(arvoreAtual); } )
+	  | ( arvoreAtual = criar_funcoes() { if(arvoreAtual != null) arvores.add(arvoreAtual); } )
+	)*
+  	<EOF> 
+  	{ 
+  	    System.out.println("Análise sintática finalizada");
+  	    try {
+  	        escreverArvoresEmArquivo(arvores, "arvores_fonte1.txt");
+  	        System.out.println("Arquivo arvores_fonte1.txt gerado.");
+  	    }
+  	    catch (java.io.IOException e) {
+  	        System.err.println("Erro ao escrever o arquivo da árvore: " + e.getMessage());
+  	    }
+  	}
 }
 
-void inclusao_biblioteca():
+No inclusao_biblioteca():
 {
 	Token t;
+	No noImport = new No("IMPORT");
 }
 {
-    t = <TOKEN_IMPORT> { inserirTokenUnico(reservada, "IMPORT", t); }
-    t = <STRING> { inserirTokenUnico(simbolo, "STRING", t); }
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-    					 System.out.println("Biblioteca importada"); }
+    <TOKEN_IMPORT> 
+    t = <STRING> { noImport.adicionarFilho(new No("BIBLIOTECA", t.image)); }
+    <PONTO_VIRGULA>
+    { return noImport; }
 }
 
 
 // 2. BLOCO DE COMANDOS
-void bloco_de_comandos():
+No bloco_de_comandos():
 {
+    No noBloco = new No("BLOCO_COMANDOS");
+    No cmd;
 }
 {
-  	( comando() )*
+  	( 
+  	  // Para cada comando encontrado, captura seu nó e adiciona ao bloco
+  	  cmd = comando() { noBloco.adicionarFilho(cmd); } 
+  	)*
+  	{ return noBloco; }
 }
 
 
 // Regra unica de comando.
-void comando():
+No comando():
 {
-  	Token t;
+    No noComando;
 }
 {
 	// 3. DECLARAÇÃO DE VARIÁVEIS
-	declarar_variavel()
+	noComando = declarar_variavel() { return noComando; }
 	// LOOKAHEAD para resolver a ambiguidade entre chamada de função e atribuição.
-	| LOOKAHEAD(2) atribuicao()
+	| LOOKAHEAD(2) noComando = atribuicao() { return noComando; }
 	// 4. CHAMADA DE FUNÇÃO
-	| chamar_funcao()
+	| noComando = chamar_funcao() { return noComando; }
 	// 5. ESTRUTURA CONDICIONAL (IF e IF/ELSE)
-	| if_else()
+	| noComando = if_else() { return noComando; }
 	// 6. ESTRUTURA DE REPETIÇÃO (WHILE)
-    | laco_while()
+    | noComando = laco_while() { return noComando; }
 	// 7. ESTRUTURA DE REPETIÇÃO (FOR)
-	| laco_for()
+	| noComando = laco_for() { return noComando; }
 	// 8. COMANDO DE RETORNO
-    | retorno()
+    | noComando = retorno() { return noComando; }
 	// 9. COMANDO DE ESCRITA
-	| comando_escrita()
+	| noComando = comando_escrita() { return noComando; }
 	// 10. COMANDO DE LEITURA
-	| comando_leitura()
-    | t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); } // Permite comandos vazios
+	| noComando = comando_leitura() { return noComando; }
+    | <PONTO_VIRGULA> { return new No("COMANDO_VAZIO"); } 
 }
 
 
 // Estrutura condicional if/else.
-void if_else():
+No if_else():
 {
-	Token t;
+	No noIf = new No("ESTRUTURA_IF");
+    No condicao;
+    No blocoPrincipal;
+    No blocoSenao = null;
 }
 {
-	t = <TOKEN_IF> { inserirTokenUnico(reservada, "IF", t); }
-	t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } expressao()
-	t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-	t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
-	t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-						System.out.println("If criado"); }
-	( senao() )?
+	<TOKEN_IF> <ABRE_PARENTESIS>
+	condicao = expressao() { noIf.adicionarFilho(condicao); } 
+	<FECHA_PARENTESIS> <ABRE_CHAVES>
+	blocoPrincipal = bloco_de_comandos() { noIf.adicionarFilho(blocoPrincipal); }
+	<FECHA_CHAVES>
+	(
+	  blocoSenao = senao() { noIf.adicionarFilho(blocoSenao); }
+	)?
+	{ return noIf; }
 }
 
-void senao():
+No senao():
 {
-	Token t;
+	No noElse = new No("BLOCO_ELSE");
+    No bloco;
 }
 {
-  	t = <TOKEN_ELSE> { inserirTokenUnico(reservada, "ELSE", t); }
-  	t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
-  	t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-  						System.out.println("Else criado"); }
+  	<TOKEN_ELSE> <ABRE_CHAVES>
+  	bloco = bloco_de_comandos() { noElse.adicionarFilho(bloco); }
+  	<FECHA_CHAVES>
+  	{ return noElse; }
 }
 
 // Laço de repetição while.
-void laco_while():
+No laco_while():
 {
-	Token t;
+	No noWhile = new No("LACO_WHILE");
+	No condicao;
+	No bloco;
 }
 {
-    t = <TOKEN_WHILE> { inserirTokenUnico(reservada, "WHILE", t); }
-    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } expressao()
-    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-    t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
-    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-      					 System.out.println("While criado"); }
+    <TOKEN_WHILE>
+    <ABRE_PARENTESIS> 
+    condicao = expressao() { noWhile.adicionarFilho(condicao); }
+    <FECHA_PARENTESIS>
+    <ABRE_CHAVES> 
+    bloco = bloco_de_comandos() { noWhile.adicionarFilho(bloco); }
+    <FECHA_CHAVES>
+    { return noWhile; }
 }
 
 // Laço de repetição for.
-void laco_for():
+No laco_for():
 {
-	Token t;
+	No noFor = new No("LACO_FOR");
+	No inicializacao = null;
+	No condicao = null;
+	No incremento = null;
+	No bloco;
 }
 {
-    t = <TOKEN_FOR> { inserirTokenUnico(reservada, "FOR", t); }
-    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } ( atribuicao_simples() )?
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); } ( expressao() )?
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); } ( atribuicao_simples())?
-    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-    t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); } bloco_de_comandos()
-    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t); }
+    <TOKEN_FOR>
+    <ABRE_PARENTESIS> 
+    ( inicializacao = atribuicao_simples() )? { noFor.adicionarFilho(inicializacao != null ? inicializacao : new No("INICIALIZACAO_VAZIA")); }
+    <PONTO_VIRGULA> 
+    ( condicao = expressao() )? { noFor.adicionarFilho(condicao != null ? condicao : new No("CONDICAO_VAZIA")); }
+    <PONTO_VIRGULA>
+    ( incremento = atribuicao_simples())? { noFor.adicionarFilho(incremento != null ? incremento : new No("INCREMENTO_VAZIO")); }
+    <FECHA_PARENTESIS>
+    <ABRE_CHAVES>
+    bloco = bloco_de_comandos() { noFor.adicionarFilho(bloco); }
+    <FECHA_CHAVES>
+    { return noFor; }
 }
 
 
 // Comando de escrita de dados.
-void comando_escrita():
+No comando_escrita():
 {
-	Token t;
+	No noWrite = new No("ESCRITA");
+	No args;
 }
 {
-    t = <TOKEN_WRITE> { inserirTokenUnico(reservada, "WRITE", t); }
-    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } lista_de_argumentos()
-    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); }
+    <TOKEN_WRITE>
+    <ABRE_PARENTESIS>
+    args = lista_de_argumentos() { noWrite.adicionarFilho(args); }
+    <FECHA_PARENTESIS>
+    <PONTO_VIRGULA>
+    { return noWrite; }
 }
 
 
 // Comando de leitura de dados.
-void comando_leitura():
+No comando_leitura():
 {
   	Token t;
+  	No noRead = new No("LEITURA");
 }
 {
-    t = <TOKEN_READ> { inserirTokenUnico(reservada, "READ", t); }
-    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); }
-    t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
-    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); }
+    <TOKEN_READ>
+    <ABRE_PARENTESIS>
+    t = <IDENTIFICADOR> { noRead.adicionarFilho(new No("IDENTIFICADOR", t.image)); }
+    <FECHA_PARENTESIS>
+    <PONTO_VIRGULA>
+    { return noRead; }
 }
 
 // Comando de retorno de função.
-void retorno():
+No retorno():
 {
-	Token t;
+	No noReturn = new No("RETORNO");
+	No expr = null;
 }
 {
-    t = <TOKEN_RETURN> {  inserirTokenUnico(reservada, "RETURN", t); } ( expressao() )?
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-    					  System.out.println("Retorno");}
+    <TOKEN_RETURN> 
+    ( expr = expressao() )? { if(expr != null) noReturn.adicionarFilho(expr); }
+    <PONTO_VIRGULA> 
+    { return noReturn; }
 }
 
 
 // 11. ATRIBUIÇÕES
-void atribuicao():
+No atribuicao():
 {
 	Token t;
+	No noAtrib = new No("ATRIBUICAO");
+	No expr;
 }
 {
-   	t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
-   	t = <ATRIBUICAO> { inserirTokenUnico(reservada, "ATRIBUICAO", t); } expressao()
-   	t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-   						System.out.println("Atribuição"); }
+   	t = <IDENTIFICADOR> { noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image)); }
+   	<ATRIBUICAO> 
+   	expr = expressao() { noAtrib.adicionarFilho(expr); }
+   	<PONTO_VIRGULA>
+   	{ return noAtrib; }
 }
 
 // Regra auxiliar para o laço 'for', que é uma atribuição sem o ponto e vírgula final.
-void atribuicao_simples():
+No atribuicao_simples():
 {
 	Token t;
+	No noAtrib = new No("ATRIBUICAO_SIMPLES");
+	No expr;
 }
 {
-    t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
-    t = <ATRIBUICAO> { inserirTokenUnico(reservada, "ATRIBUICAO", t); } expressao()
+    t = <IDENTIFICADOR> { noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image)); }
+    <ATRIBUICAO> 
+    expr = expressao() { noAtrib.adicionarFilho(expr); }
+    { return noAtrib; }
 }
 
 
-// Nível mais alto da expressão. Começa com o operador de menor precedência (OR).
-void expressao():
-{}
+// Nível mais alto da expressão.
+No expressao():
 {
-	expressao_or()
+    No expr;
+}
+{
+	expr = expressao_or()
+	{ return expr; }
 }
 
 // 12. OPERADORES LÓGICOS (OR)
-void expressao_or():
+No expressao_or():
 {
 	Token t;
+	No esq, dir;
 }
 {
-    expressao_and() ( t = <OR> { inserirTokenUnico(reservada, "OR", t); } expressao_and() )*
+    esq = expressao_and() 
+    ( 
+      t = <OR> 
+      dir = expressao_and() 
+      { 
+        No opNode = new No("OPERACAO", t.image);
+        opNode.adicionarFilho(esq);
+        opNode.adicionarFilho(dir);
+        esq = opNode;
+      }
+    )*
+    { return esq; }
 }
 
 // 13. OPERADORES LÓGICOS (AND)
-void expressao_and():
+No expressao_and():
 {
 	Token t;
+	No esq, dir;
 }
 {
-    expressao_relacional() ( t = <AND> { inserirTokenUnico(reservada, "AND", t); } expressao_relacional() )*
+    esq = expressao_relacional()
+    ( 
+      t = <AND> 
+      dir = expressao_relacional()
+      {
+        No opNode = new No("OPERACAO", t.image);
+        opNode.adicionarFilho(esq);
+        opNode.adicionarFilho(dir);
+        esq = opNode;
+      }
+    )*
+    { return esq; }
 }
 
 // 14. OPERADORES RELACIONAIS (==, !=, <, >, <=, >=)
-void expressao_relacional():
+No expressao_relacional():
 {
 	Token t;
+	No esq, dir;
 }
 {
-    expressao_aritmetica()
+    esq = expressao_aritmetica()
     (
-        ( t = <IGUAL> { inserirTokenUnico(reservada, "IGUAL", t); }
-        | t = <DIFERENTE> { inserirTokenUnico(reservada, "DIFERENTE", t); }
-        | t = <MENOR> { inserirTokenUnico(reservada, "MENOR", t); }
-        | t = <MAIOR> { inserirTokenUnico(reservada, "MAIOR", t); }
-        | t = <MENOR_IGUAL> { inserirTokenUnico(reservada, "MENOR_IGUAL", t); }
-        | t = <MAIOR_IGUAL> { inserirTokenUnico(reservada, "MAIOR_IGUAL", t); } )
-        expressao_aritmetica()
+        ( t = <IGUAL>
+        | t = <DIFERENTE>
+        | t = <MENOR>
+        | t = <MAIOR>
+        | t = <MENOR_IGUAL>
+        | t = <MAIOR_IGUAL> )
+        dir = expressao_aritmetica()
+        {
+          No opNode = new No("OPERACAO", t.image);
+          opNode.adicionarFilho(esq);
+          opNode.adicionarFilho(dir);
+          esq = opNode;
+        }
     )?
+    { return esq; }
 }
 
 // 15. OPERADORES ARITMÉTICOS (+, -)
-void expressao_aritmetica():
+No expressao_aritmetica():
 {
 	Token t;
+	No esq, dir;
 }
 {
-	termo() ( ( t = <ADICAO> { inserirTokenUnico(reservada, "ADICAO", t); }
-			  | t = <SUBTRACAO> { inserirTokenUnico(reservada, "SUBTRACAO", t); } ) termo() )*
+	esq = termo() 
+	( 
+	  ( t = <ADICAO> | t = <SUBTRACAO> ) 
+	  dir = termo() 
+	  {
+	    No opNode = new No("OPERACAO", t.image);
+	    opNode.adicionarFilho(esq);
+	    opNode.adicionarFilho(dir);
+	    esq = opNode;
+	  }
+	)*
+	{ return esq; }
 }
 
 
 // 16. OPERADORES ARITMÉTICOS (*, /)
-void termo():
+No termo():
 {
 	Token t;
+	No esq, dir;
 }
 {
-	fator() ( ( t = <MULTIPLICACAO> { inserirTokenUnico(reservada, "MULTIPLICACAO", t); }
-			  | t = <DIVISAO> { inserirTokenUnico(reservada, "DIVISAO", t); } ) fator() )*
+	esq = fator() 
+	( 
+	  ( t = <MULTIPLICACAO> | t = <DIVISAO> ) 
+	  dir = fator()
+	  {
+	    No opNode = new No("OPERACAO", t.image);
+	    opNode.adicionarFilho(esq);
+	    opNode.adicionarFilho(dir);
+	    esq = opNode;
+	  }
+	)*
+	{ return esq; }
 }
 
 // 17. OPERADORES UNÁRIOS (!, -)
-void fator():
+No fator():
 {
 	Token t;
+	No no;
 }
 {
-    ( t = <SUBTRACAO> { inserirTokenUnico(reservada, "SUBTRACAO", t); }
-    | t = <NOT> { inserirTokenUnico(reservada, "NOT", t); } ) fator()
-|   valor_base()
+    ( 
+      t = <SUBTRACAO> { No opUnario = new No("OP_UNARIO", t.image); } { no = fator(); } { opUnario.adicionarFilho(no); } { return opUnario; }
+    | t = <NOT>       { No opUnario = new No("OP_UNARIO", t.image); no = fator(); opUnario.adicionarFilho(no); return opUnario; } 
+    )
+|
+	no = valor_base() { return no; }
 }
 
 
 // Base da recursão das expressões. Define os elementos atômicos.
-void valor_base():
+No valor_base():
 {
 	Token t;
+    No no;
 }
 {
-	t = <INTEIRO> { inserirTokenUnico(simbolo, "INTEIRO", t); }
-|   t = <REAL> { inserirTokenUnico(simbolo, "REAL", t); }
-// 18. USO DE STRINGS
-|   t = <STRING> { inserirTokenUnico(simbolo, "STRING", t); }
-|   t = <TOKEN_TRUE> { inserirTokenUnico(reservada, "TRUE", t); }
-|   t = <TOKEN_FALSE> { inserirTokenUnico(reservada, "FALSE", t); }
-|   t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
-// 19. USO DE PARÊNTESES
-|	t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } expressao()
-	t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
+	( t = <INTEIRO> { no = new No("INTEIRO", t.image); }
+|   t = <REAL> { no = new No("REAL", t.image); }
+|   t = <STRING> { no = new No("STRING", t.image); }
+|   t = <TOKEN_TRUE> { no = new No("BOOLEANO", t.image); }
+|   t = <TOKEN_FALSE> { no = new No("BOOLEANO", t.image); }
+|   t = <IDENTIFICADOR> { no = new No("IDENTIFICADOR", t.image); }
+|	<ABRE_PARENTESIS> no = expressao() <FECHA_PARENTESIS> 
+    )
+    { return no; }
 }
 
 // Função para declarar variáveis
-void declarar_variavel():
+No declarar_variavel():
 {
-    Token t;
+    Token t, tipoToken;
+    No noDecl = new No("DECLARACAO_VARIAVEL");
 }
 {
-    ( t = <TOKEN_INT> { inserirTokenUnico(reservada, "INTEGER", t); }
-    | t = <TOKEN_FLOAT> { inserirTokenUnico(reservada, "FLOAT", t); }
-    | t = <TOKEN_CHAR> { inserirTokenUnico(reservada, "CHAR", t); }
-    | t = <TOKEN_BOOL> { inserirTokenUnico(reservada, "BOOLEAN", t); }
-    | t = <TOKEN_DOUBLE> { inserirTokenUnico(reservada, "DOUBLE", t); } )
+    ( tipoToken = <TOKEN_INT> 
+    | tipoToken = <TOKEN_FLOAT> 
+    | tipoToken = <TOKEN_CHAR> 
+    | tipoToken = <TOKEN_BOOL> 
+    | tipoToken = <TOKEN_DOUBLE> 
+    ) { noDecl.adicionarFilho(new No("TIPO", tipoToken.image)); }
 
     t = <IDENTIFICADOR> {
+        noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
         if(t.image.length() > MAX){
-        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-       	}
-        else{
-        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
         }
     }
-    ( t = <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); } 
-
-    t = <IDENTIFICADOR> {
-        if(t.image.length() > MAX){
-        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-        }
-    })*
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-    					  System.out.println("Declarar variável");}
+    ( 
+      <VIRGULA> 
+      t = <IDENTIFICADOR> {
+          noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
+          if(t.image.length() > MAX){
+            System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
+          }
+      }
+    )*
+    <PONTO_VIRGULA> 
+    { return noDecl; }
 }
 
 // Função para chamada de funções
-void chamar_funcao():
+No chamar_funcao():
 {
     Token t;
+    No noChamada = new No("CHAMADA_FUNCAO");
+    No args = null;
 }
 {
     t = <IDENTIFICADOR> {
+        noChamada.adicionarFilho(new No("IDENTIFICADOR", t.image));
         if(t.image.length() > MAX){
-        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
         }
     }
-    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } ( lista_de_argumentos() )?
-    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-    t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
-    						System.out.println("Chamada de função"); }
+    <ABRE_PARENTESIS> 
+    ( args = lista_de_argumentos() )? { noChamada.adicionarFilho(args != null ? args : new No("LISTA_ARGUMENTOS_VAZIA")); }
+    <FECHA_PARENTESIS>
+    <PONTO_VIRGULA>
+    { return noChamada; }
 }
 
 // Regra auxiliar para lista de argumentos em chamadas de função
-void lista_de_argumentos():
+No lista_de_argumentos():
 {
-	Token t;
+	No noLista = new No("LISTA_ARGUMENTOS");
+	No expr;
 }
 {
-    expressao() (
-    t = <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); } expressao() )*
+    expr = expressao() { noLista.adicionarFilho(expr); } 
+    ( <VIRGULA> expr = expressao() { noLista.adicionarFilho(expr); } )*
+    { return noLista; }
 }
 
 
 
 // 20. DEFINIÇÃO DE FUNÇÕES
-void criar_funcoes():
+No criar_funcoes():
 {
-    Token t;
+    Token t, tipoToken;
+    No noFuncao = new No("DEFINICAO_FUNCAO");
+    No params = null;
+    No bloco;
 }
 {
-    ( <TOKEN_VOID>
-    | <TOKEN_INT>
-    | <TOKEN_FLOAT>
-    | <TOKEN_CHAR>
-    | <TOKEN_BOOL>
-    | <TOKEN_DOUBLE> )
+    ( tipoToken = <TOKEN_VOID>
+    | tipoToken = <TOKEN_INT>
+    | tipoToken = <TOKEN_FLOAT>
+    | tipoToken = <TOKEN_CHAR>
+    | tipoToken = <TOKEN_BOOL>
+    | tipoToken = <TOKEN_DOUBLE> 
+    ) { noFuncao.adicionarFilho(new No("TIPO_RETORNO", tipoToken.image)); }
     
     t = <IDENTIFICADOR> {
+        noFuncao.adicionarFilho(new No("IDENTIFICADOR", t.image));
         if(t.image.length() > MAX){
-        	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
-        else{
-        	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
         }
     }
-    t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); } ( lista_de_parametros() )?
-    t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
-    t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); }
-        bloco_de_comandos()
-    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHAS_CHAVES", t);
-    					System.out.println("Função criada");}
+    <ABRE_PARENTESIS> 
+    ( params = lista_de_parametros() )? { noFuncao.adicionarFilho(params != null ? params : new No("LISTA_PARAMETROS_VAZIA")); }
+    <FECHA_PARENTESIS>
+    <ABRE_CHAVES>
+    bloco = bloco_de_comandos() { noFuncao.adicionarFilho(bloco); }
+    <FECHA_CHAVES>
+    { return noFuncao; }
 }
 
 // Regra auxiliar para lista de parâmetros em definições de função
-void lista_de_parametros():
+No lista_de_parametros():
 {
-    Token t;
+    Token t, tipoToken;
+    No noLista = new No("LISTA_PARAMETROS");
 }
 {
-    ( t = <TOKEN_INT> { inserirTokenUnico(reservada, "INTEGER", t); }
-    | t = <TOKEN_FLOAT> { inserirTokenUnico(reservada, "FLOAT", t); }
-    | t = <TOKEN_CHAR> { inserirTokenUnico(reservada, "CHAR", t); }
-    | t = <TOKEN_BOOL> { inserirTokenUnico(reservada, "BOOLEAN", t); }
-    | t = <TOKEN_DOUBLE> { inserirTokenUnico(reservada, "DOUBLE", t); } )
-    t = <IDENTIFICADOR> {
-         if(t.image.length() > MAX){
-         	System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
-         }
-         else{
-         	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-         }
-    }
-    ( <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); } (
-      <TOKEN_INT> { inserirTokenUnico(reservada, "INTEGER", t); }
-    | <TOKEN_FLOAT> { inserirTokenUnico(reservada, "FLOAT", t); }
-    | <TOKEN_CHAR> { inserirTokenUnico(reservada, "CHAR", t); }
-    | <TOKEN_BOOL> { inserirTokenUnico(reservada, "BOOLEAN", t); }
-    | <TOKEN_DOUBLE> { inserirTokenUnico(reservada, "DOUBLE", t); } )
-        t = <IDENTIFICADOR> {
-             if(t.image.length() > MAX){
-             	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-             }
-             else{
-             	inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-             }
+    // Primeiro parâmetro
+    ( tipoToken = <TOKEN_INT> | tipoToken = <TOKEN_FLOAT> | tipoToken = <TOKEN_CHAR> | tipoToken = <TOKEN_BOOL> | tipoToken = <TOKEN_DOUBLE> )
+    t = <IDENTIFICADOR> 
+    {
+        No noParam = new No("PARAMETRO");
+        noParam.adicionarFilho(new No("TIPO", tipoToken.image));
+        noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
+        noLista.adicionarFilho(noParam);
+        if(t.image.length() > MAX){
+           System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
         }
+    }
+    
+    // Mais parâmetros (opcionais)
+    ( 
+      <VIRGULA> 
+      ( tipoToken = <TOKEN_INT> | tipoToken = <TOKEN_FLOAT> | tipoToken = <TOKEN_CHAR> | tipoToken = <TOKEN_BOOL> | tipoToken = <TOKEN_DOUBLE> )
+      t = <IDENTIFICADOR>
+      {
+          No noParam1 = new No("PARAMETRO");
+          noParam.adicionarFilho(new No("TIPO", tipoToken.image));
+          noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
+          noLista.adicionarFilho(noParam);
+          if(t.image.length() > MAX){
+          	System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
+          }
+      }
     )*
+    { return noLista; }
 }
