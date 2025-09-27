@@ -96,9 +96,12 @@ public class Lexico implements LexicoConstants {
         Lexico parser;
         FileInputStream arquivo;
         Scanner scanner = new Scanner(System.in);
+        int opcao;
+
+        System.out.print("Insira o nome do arquivos: ");
 
         try {
-            arquivo = new FileInputStream("fonte_1.txt");
+            arquivo = new FileInputStream(scanner.nextLine());
         }
         catch(FileNotFoundException e) {
             System.out.println(e);
@@ -108,6 +111,26 @@ public class Lexico implements LexicoConstants {
         try {
             parser = new Lexico(arquivo);
             parser.inicializar_programa();
+
+                        do {
+                                System.out.println("1 - Imprimir tabela de simbolos");
+                                System.out.println("2 - Imprimir tabela de palavras reservadas");
+                                System.out.println("0 - Sair");
+                                System.out.print("Selecione uma opcao:");
+                    opcao = scanner.nextInt();
+
+                    switch(opcao) {
+                                        case 1:
+                                                imprimirTokens(simbolo);
+                                                break;
+                                        case 2:
+                                                imprimirTokens(reservada);
+                                                break;
+                                        default:
+                                                System.out.println("Op\u00e7\u00e3o incorreta!");
+                                                break;
+                    }
+                }while(opcao != 0);
                 }
                 catch(ParseException e) {
             System.out.println("Erro de sintaxe: " + e.getMessage());
@@ -127,7 +150,7 @@ public class Lexico implements LexicoConstants {
         l.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
     }
 
-    public void imprimirTokens(LinkedList<InfoToken> l) {
+    public static void imprimirTokens(LinkedList<InfoToken> l) {
         if (l.isEmpty()) {
             System.out.println("Lista vazia");
             return;
@@ -183,7 +206,7 @@ if(arvoreAtual != null) arvores.add(arvoreAtual);
 System.out.println("An\u00e1lise sint\u00e1tica finalizada");
             try {
                 escreverArvoresEmArquivo(arvores, "arvores_fonte1.txt");
-                System.out.println("Arquivo arvores_fonte1.txt gerado.");
+                System.out.println("Arquivo arvores_fonte1.txt gerado.\n");
             }
             catch (java.io.IOException e) {
                 System.err.println("Erro ao escrever o arquivo da \u00e1rvore: " + e.getMessage());
@@ -1146,7 +1169,7 @@ No noParam1 = new No("PARAMETRO");
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_475_9_10()
+  private boolean jj_3R_atribuicao_498_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1155,7 +1178,7 @@ No noParam1 = new No("PARAMETRO");
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_475_9_10()) return true;
+    if (jj_3R_atribuicao_498_9_10()) return true;
     return false;
   }
 
