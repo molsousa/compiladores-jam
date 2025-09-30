@@ -3,7 +3,7 @@ options
   static = false;
 }
 
-PARSER_BEGIN(Lexico)
+PARSER_BEGIN(JAM)
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,58 +12,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-// Classe para nó de arvore sintática
-class No {
-    String tipo;
-    String valor;
-    LinkedList<No> filhos;
-    
-    public No(String tipo) {
-        this.tipo = tipo;
-        this.valor = null;
-        this.filhos = new LinkedList<>();
-    }
-    
-    public No(String tipo, String valor) {
-        this.tipo = tipo;
-        this.valor = valor;
-        this.filhos = new LinkedList<>();
-    }
-
-    public void adicionarFilho(No filho) {
-        if (filho != null) {
-            this.filhos.add(filho);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "No(Tipo=" + tipo + ", Valor=" + valor + ")";
-    }
-}
-
-// Classe para criar especificação de token (léxico)
-class InfoToken {
-    String tipo;
-    String lexema;
-    int linha;
-    int coluna;
-
-    public InfoToken(String tipo, String lexema, int linha, int coluna) {
-        this.tipo = tipo;
-        this.lexema = lexema;
-        this.linha = linha;
-        this.coluna = coluna;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Tipo: %s\nLexema: <'%s'>\nLinha: %d, Coluna: %d\n", this.tipo, this.lexema, this.linha, this.coluna);
-    }
-}
-
 // Classe principal
-public class Lexico
+public class JAM
 {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
@@ -80,7 +30,7 @@ public class Lexico
         writer.close();
     }
 
-    private void escreverNoRecursivo(No no, int nivel, java.io.FileWriter writer) throws IOException {
+    private void escreverNoRecursivo(No no, int nivel, FileWriter writer) throws IOException {
         if (no == null) return;
 
         for (int i = 0; i < nivel; i++) {
@@ -99,7 +49,7 @@ public class Lexico
     }
   
     public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
-        Lexico parser;
+        JAM parser;
         FileInputStream arquivo;
         Scanner scanner = new Scanner(System.in);
         int opcao;
@@ -115,7 +65,7 @@ public class Lexico
         }
 
         try {
-            parser = new Lexico(arquivo);
+            parser = new JAM(arquivo);
             parser.inicializar_programa();
 
 			do { 
@@ -170,7 +120,7 @@ public class Lexico
     }
 }
 
-PARSER_END(Lexico)
+PARSER_END(JAM)
 
 // TOKENS (Léxico)
 
@@ -825,7 +775,7 @@ No lista_de_parametros():
     
     // Mais parâmetros (opcionais)
     ( 
-      <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); }
+      t = <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); }
       ( tipoToken = <TOKEN_INT>
       | tipoToken = <TOKEN_FLOAT>
       | tipoToken = <TOKEN_CHAR>
