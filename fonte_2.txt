@@ -7,6 +7,9 @@ void main()
 	
 	// Caractere inválido.
 	@
+	
+	// String inválida
+	"aaaaa
 
 	// Declaração de variável sem o ';' no final.
 	float y
