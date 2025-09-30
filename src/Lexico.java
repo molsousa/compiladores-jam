@@ -126,17 +126,20 @@ public class Lexico implements LexicoConstants {
                                         case 2:
                                                 imprimirTokens(reservada);
                                                 break;
+                                        case 0:
+                                                System.out.println("Obrigado!!");
+                                                break;
                                         default:
                                                 System.out.println("Op\u00e7\u00e3o incorreta!");
                                                 break;
                     }
                 }while(opcao != 0);
                 }
-                catch(ParseException e) {
-            System.out.println("Erro de sintaxe: " + e.getMessage());
-        }
         catch(TokenMgrError e) {
             System.out.println("Erro l\u00e9xico: " + e.getMessage());
+        }
+                catch(ParseException e) {
+            System.out.println("Erro de sintaxe: " + e.getMessage());
         }
         scanner.close();
     }
@@ -208,7 +211,7 @@ System.out.println("An\u00e1lise sint\u00e1tica finalizada");
                 escreverArvoresEmArquivo(arvores, "arvores_fonte1.txt");
                 System.out.println("Arquivo arvores_fonte1.txt gerado.\n");
             }
-            catch (java.io.IOException e) {
+            catch (IOException e) {
                 System.err.println("Erro ao escrever o arquivo da \u00e1rvore: " + e.getMessage());
             }
 }
@@ -1169,7 +1172,7 @@ No noParam1 = new No("PARAMETRO");
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_498_9_10()
+  private boolean jj_3R_atribuicao_501_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1178,7 +1181,7 @@ No noParam1 = new No("PARAMETRO");
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_498_9_10()) return true;
+    if (jj_3R_atribuicao_501_9_10()) return true;
     return false;
   }
 

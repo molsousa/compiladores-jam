@@ -1,0 +1,27 @@
+import "lexico.java";
+
+void main()
+{
+	// Identificador inválido contendo o caractere '$'.
+	integer ff@ff;
+	
+	// Caractere inválido.
+	@
+
+	// Declaração de variável sem o ';' no final.
+	float y
+
+	// Expressão de atribuição incompleta. Falta um operando após '*'.
+	y = 5 * ;
+
+	// Estrutura condicional 'if' sem o corpo (bloco de comandos).
+	if(y > 10)
+
+	// Chamada de função com parênteses não fechados.
+	soma(5, 8;
+}
+
+integer soma(integer a, integer b)
+{
+	return a + b;
+}
