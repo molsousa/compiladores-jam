@@ -101,8 +101,8 @@ public class JAM
     }
 
     public void inserirTokenUnico(LinkedList<InfoToken> l, String tipo, Token t) {
-        for (InfoToken tok : l) {
-            if (tok.lexema.equals(t.image)) {
+        for(InfoToken tok : l) {
+            if(tok.lexema.equals(t.image)) {
                 return;
             }
         }
@@ -110,11 +110,11 @@ public class JAM
     }
 
     public static void imprimirTokens(LinkedList<InfoToken> l) {
-        if (l.isEmpty()) {
+        if(l.isEmpty()) {
             System.out.println("Lista vazia");
             return;
         }
-        for (InfoToken tok : l) {
+        for(InfoToken tok : l) {
             System.out.println(tok);
         }
     }
@@ -127,9 +127,7 @@ PARSER_END(JAM)
 SKIP :
 {
   " "
-| "\r"
-| "\t"
-| "\n"
+| "\r" | "\t" | "\n"
 | < "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n") >
 | < "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/" >
 }
@@ -137,67 +135,35 @@ SKIP :
 // Palavras reservadas
 TOKEN:
 {
-    < TOKEN_IF: "if" >
-|   < TOKEN_ELSE: "else" >
-|   < TOKEN_WHILE: "while" >
-|   < TOKEN_FOR: "for" >
-|   < TOKEN_VOID: "void" >
-|   < TOKEN_INT: "integer" >
-|   < TOKEN_FLOAT: "float" >
-|   < TOKEN_CHAR: "character" >
-|   < TOKEN_BOOL: "boolean" >
-|   < TOKEN_RETURN: "return" >
-|   < TOKEN_TRUE: "true" >
-|   < TOKEN_FALSE: "false" >
-|   < TOKEN_DOUBLE: "double" >
-|   < TOKEN_SWITCH: "switch" >
-|   < TOKEN_DO: "do" >
-|   < TOKEN_TRY: "try" >
-|   < TOKEN_EXCEPT: "except" >
-|   < TOKEN_IMPORT: "import" >
-| 	< TOKEN_READ: "read" >
-| 	< TOKEN_WRITE: "write" >
+    < TOKEN_IF: "if" > | < TOKEN_ELSE: "else" > | < TOKEN_SWITCH: "switch" >
+| < TOKEN_WHILE: "while" > | < TOKEN_FOR: "for" > | < TOKEN_DO: "do" >
+| < TOKEN_VOID: "void" > | < TOKEN_INT: "integer" > | < TOKEN_FLOAT: "float" > | < TOKEN_DOUBLE: "double" > | < TOKEN_CHAR: "character" > | < TOKEN_BOOL: "boolean" >
+| < TOKEN_RETURN: "return" >
+| < TOKEN_TRUE: "true" > | < TOKEN_FALSE: "false" >
+| < TOKEN_TRY: "try" > | < TOKEN_EXCEPT: "except" >
+| < TOKEN_IMPORT: "import" >
+| < TOKEN_READ: "read" > | < TOKEN_WRITE: "write" >
 }
 
 // Operadores
 TOKEN:
 {
-    < ADICAO : "+" >
-|   < SUBTRACAO : "-" >
-|   < MULTIPLICACAO : "*" >
-|   < DIVISAO : "/" >
-|   < ATRIBUICAO: "=" >
-|   < MODULO: "%" >
-|   < IGUAL: "==" >
-|   < DIFERENTE: "!=" >
-|   < MENOR: "<" >
-|   < MAIOR: ">" >
-|   < MAIOR_IGUAL: ">=" >
-|   < MENOR_IGUAL: "<=" >
-|   < AND: "&&" >
-|   < NOT: "!" >
-|   < OR: "||" >
-|   < INCREMENTO: "++" >
-|   < DECREMENTO: "--" >
-|   < SOMA_ATRIBUICAO: "+=" >
-|   < SUBTRACAO_ATRIBUICAO: "-=" >
-|   < MULTIPLICACAO_ATRIBUICAO: "*=" >
-|   < DIVISAO_ATRIBUICAO: "/=" >
-|   < MODULO_ATRIBUICAO: "%/" >
+    < ADICAO : "+" > | < SUBTRACAO : "-" > | < MULTIPLICACAO : "*" > | < DIVISAO : "/" > | < MODULO: "%" >
+| < ATRIBUICAO: "=" > | < IGUAL: "==" > | < DIFERENTE: "!=" >
+| < MENOR: "<" > | < MAIOR: ">" >
+| < MAIOR_IGUAL: ">=" > | < MENOR_IGUAL: "<=" >
+| < AND: "&&" > | < NOT: "!" > | < OR: "||" >
+| < INCREMENTO: "++" > | < DECREMENTO: "--" >
+| < SOMA_ATRIBUICAO: "+=" > | < SUBTRACAO_ATRIBUICAO: "-=" > | < MULTIPLICACAO_ATRIBUICAO: "*=" > | < DIVISAO_ATRIBUICAO: "/=" > | < MODULO_ATRIBUICAO: "%/" >
 }
 
 // Simbolos reservados
 TOKEN:
 {
-    < PONTO_VIRGULA: ";" >
-|   < VIRGULA: "," >
-|   < PONTO: "." >
-|   < ABRE_CHAVES: "{" >
-|   < FECHA_CHAVES: "}" >
-|   < ABRE_PARENTESIS: "(" >
-|   < FECHA_PARENTESIS: ")" >
-|   < ABRE_COLCHETES: "[" >
-|   < FECHA_COLCHETES: "]" >
+    < PONTO_VIRGULA: ";" > | < VIRGULA: "," > | < PONTO: "." >
+| < ABRE_CHAVES: "{" > | < FECHA_CHAVES: "}" >
+| < ABRE_PARENTESIS: "(" > | < FECHA_PARENTESIS: ")" >
+| < ABRE_COLCHETES: "[" > | < FECHA_COLCHETES: "]" >
 }
 
 // Tabela de simbolos e tipos de dados
@@ -618,7 +584,8 @@ No valor_base():
     No no;
 }
 {
-	( t = <INTEIRO> { no = new No("INTEIRO", t.image); }
+	(
+	t = <INTEIRO> { no = new No("INTEIRO", t.image); }
 |   t = <REAL> { no = new No("REAL", t.image); }
 |   t = <STRING> { no = new No("STRING", t.image); }
 |   t = <TOKEN_TRUE> { no = new No("BOOLEANO", t.image); }
