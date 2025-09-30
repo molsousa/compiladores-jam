@@ -609,7 +609,8 @@ No declarar_variavel():
     | tipoToken = <TOKEN_FLOAT> 
     | tipoToken = <TOKEN_CHAR> 
     | tipoToken = <TOKEN_BOOL> 
-    | tipoToken = <TOKEN_DOUBLE> 
+    | tipoToken = <TOKEN_DOUBLE>
+    | tipoToken = < TOKEN_VOID >
     ) { noDecl.adicionarFilho(new No("TIPO", tipoToken.image));
 		inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     }
