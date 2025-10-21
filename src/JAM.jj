@@ -153,8 +153,6 @@ TOKEN:
 | < MENOR: "<" > | < MAIOR: ">" >
 | < MAIOR_IGUAL: ">=" > | < MENOR_IGUAL: "<=" >
 | < AND: "&&" > | < NOT: "!" > | < OR: "||" >
-| < INCREMENTO: "++" > | < DECREMENTO: "--" >
-| < SOMA_ATRIBUICAO: "+=" > | < SUBTRACAO_ATRIBUICAO: "-=" > | < MULTIPLICACAO_ATRIBUICAO: "*=" > | < DIVISAO_ATRIBUICAO: "/=" > | < MODULO_ATRIBUICAO: "%/" >
 }
 
 // Simbolos reservados

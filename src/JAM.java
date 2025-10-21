@@ -1128,7 +1128,7 @@ No noParam1 = new No("PARAMETRO");
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_417_9_10()
+  private boolean jj_3R_atribuicao_415_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1137,7 +1137,7 @@ No noParam1 = new No("PARAMETRO");
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_417_9_10()) return true;
+    if (jj_3R_atribuicao_415_9_10()) return true;
     return false;
   }
 
@@ -1155,20 +1155,15 @@ No noParam1 = new No("PARAMETRO");
   final private int[] jj_la1 = new int[30];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
-  static private int[] jj_la1_2;
   static {
 	   jj_la1_init_0();
 	   jj_la1_init_1();
-	   jj_la1_init_2();
 	}
 	private static void jj_la1_init_0() {
 	   jj_la1_0 = new int[] {0x107e000,0x107e000,0x60fec80,0x7e000,0x6080c80,0x100,0x0,0x10300000,0x0,0x10300000,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x10000000,0x10300000,0x300000,0x7e000,0x0,0x10300000,0x0,0x7e000,0x7c000,0x7c000,0x0,0x7c000,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x0,0x0,0x10020000,0x0,0x10020000,0x0,0x10000000,0x3c400100,0x10000000,0x3c400100,0x200,0x80,0x7e,0x7e,0x0,0x0,0x0,0x0,0x100,0x3c400100,0x3c400000,0x0,0x40000,0x3c400100,0x40000,0x0,0x0,0x0,0x40000,0x0,};
-	}
-	private static void jj_la1_init_2() {
-	   jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+	   jj_la1_1 = new int[] {0x0,0x0,0x200400,0x0,0x200400,0x0,0x200000,0x788100,0x200000,0x788100,0x200,0x80,0x7e,0x7e,0x0,0x0,0x0,0x0,0x100,0x788100,0x788000,0x0,0x800,0x788100,0x800,0x0,0x0,0x0,0x800,0x0,};
 	}
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1381,7 +1376,7 @@ No noParam1 = new No("PARAMETRO");
   /** Generate ParseException. */
   public ParseException generateParseException() {
 	 jj_expentries.clear();
-	 boolean[] la1tokens = new boolean[68];
+	 boolean[] la1tokens = new boolean[61];
 	 if (jj_kind >= 0) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
@@ -1395,13 +1390,10 @@ No noParam1 = new No("PARAMETRO");
 		   if ((jj_la1_1[i] & (1<<j)) != 0) {
 			 la1tokens[32+j] = true;
 		   }
-		   if ((jj_la1_2[i] & (1<<j)) != 0) {
-			 la1tokens[64+j] = true;
-		   }
 		 }
 	   }
 	 }
-	 for (int i = 0; i < 68; i++) {
+	 for (int i = 0; i < 61; i++) {
 	   if (la1tokens[i]) {
 		 jj_expentry = new int[1];
 		 jj_expentry[0] = i;
