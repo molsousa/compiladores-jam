@@ -6,12 +6,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
 
 // Classe principal
 public class JAM implements JAMConstants {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
+
+        public static Map<String, String> tabelaSemantica = new HashMap<>();
+
     private static final int MAX = 32;
+
+    public void erroSemantico(String mensagem, Token t) {
+                System.err.println("Erro sem\u00e2ntico (Linha: "+t.beginLine+ ", Coluna: "+t.beginColumn+ "): "+mensagem);
+    }
 
     public void escreverArvoresEmArquivo(LinkedList<No> arvores, String nomeArquivo) throws IOException {
         FileWriter writer = new FileWriter(nomeArquivo);
@@ -491,12 +500,26 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
   final public No atribuicao() throws ParseException {Token t;
         No noAtrib = new No("ATRIBUICAO");
         No expr;
+        String tipoVariavel = "unknown";
     t = jj_consume_token(IDENTIFICADOR);
 noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
+
+                if(tabelaSemantica.containsKey(t.image)) {
+                        tipoVariavel = tabelaSemantica.get(t.image);
+                }
+                else {
+
+                }
     t = jj_consume_token(ATRIBUICAO);
 inserirTokenUnico(reservada, "ATRIBUICAO", t);
     expr = expressao();
 noAtrib.adicionarFilho(expr);
+
+                if(!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
+                        if(!tipoVariavel.equals(expr.tipoDado)) {
+                                erroSemantico("Tipos incompat\u00edveis. A vari\u00e1vel '"+t.image+"' \u00e9 "+tipoVariavel+", mas recebeu uma express\u00e3o do tipo: "+expr.tipoDado, t);
+                        }
+                }
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 {if ("" != null) return noAtrib;}
@@ -776,32 +799,40 @@ No opUnario = new No("OP_UNARIO", t.image); no = fator(); opUnario.adicionarFilh
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case INTEIRO:{
       t = jj_consume_token(INTEIRO);
-no = new No("INTEIRO", t.image);
+no = new No("INTEIRO", t.image); no.tipoDado = "integer";
       break;
       }
     case REAL:{
       t = jj_consume_token(REAL);
-no = new No("REAL", t.image);
+no = new No("REAL", t.image); no.tipoDado = "float";
       break;
       }
     case STRING:{
       t = jj_consume_token(STRING);
-no = new No("STRING", t.image);
+no = new No("STRING", t.image); no.tipoDado = "string";
       break;
       }
     case TOKEN_TRUE:{
       t = jj_consume_token(TOKEN_TRUE);
-no = new No("BOOLEANO", t.image);
+no = new No("BOOLEANO", t.image); no.tipoDado = "boolean";
       break;
       }
     case TOKEN_FALSE:{
       t = jj_consume_token(TOKEN_FALSE);
-no = new No("BOOLEANO", t.image);
+no = new No("BOOLEANO", t.image); no.tipoDado = "boolean";
       break;
       }
     case IDENTIFICADOR:{
       t = jj_consume_token(IDENTIFICADOR);
 no = new No("IDENTIFICADOR", t.image);
+
+                if(tabelaSemantica.containsKey(t.image)) {
+                        no.tipoDado = tabelaSemantica.get(t.image);
+                }
+                else {
+                        erroSemantico("A vari\u00e1vel '"+t.image+"'n\u00e3o foi declarada.", t);
+                        no.tipoDado = "erro";
+                }
       break;
       }
     case ABRE_PARENTESIS:{
@@ -824,29 +855,36 @@ inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
 // Função para declarar variáveis
   final public No declarar_variavel() throws ParseException {Token t, tipoToken;
     No noDecl = new No("DECLARACAO_VARIAVEL");
+    String tipoAtual = "";
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:{
       tipoToken = jj_consume_token(TOKEN_INT);
+tipoAtual = "integer";
       break;
       }
     case TOKEN_FLOAT:{
       tipoToken = jj_consume_token(TOKEN_FLOAT);
+tipoAtual = "float";
       break;
       }
     case TOKEN_CHAR:{
       tipoToken = jj_consume_token(TOKEN_CHAR);
+tipoAtual = "character";
       break;
       }
     case TOKEN_BOOL:{
       tipoToken = jj_consume_token(TOKEN_BOOL);
+tipoAtual = "boolean";
       break;
       }
     case TOKEN_DOUBLE:{
       tipoToken = jj_consume_token(TOKEN_DOUBLE);
+tipoAtual = "double";
       break;
       }
     case TOKEN_VOID:{
       tipoToken = jj_consume_token(TOKEN_VOID);
+tipoAtual = "void";
       break;
       }
     default:
@@ -863,6 +901,13 @@ noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
         }
 
         inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+
+        if(tabelaSemantica.containsKey(t.image)) {
+                        erroSemantico("A vari\u00e1vel '"+t.image+"' j\u00e1 foi declarada anteriormente.", t);
+        }
+        else {
+                        tabelaSemantica.put(t.image, tipoAtual);
+        }
     label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -883,6 +928,13 @@ noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
           }
 
           inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+
+          if(tabelaSemantica.containsKey(t.image)) {
+                        erroSemantico("A vari\u00e1vel '"+t.image+"' j\u00e1 foi declarada anteriormente.", t);
+          }
+          else {
+                        tabelaSemantica.put(t.image, tipoAtual);
+          }
     }
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
@@ -1128,7 +1180,7 @@ No noParam1 = new No("PARAMETRO");
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_415_9_10()
+  private boolean jj_3R_atribuicao_425_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1137,7 +1189,7 @@ No noParam1 = new No("PARAMETRO");
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_415_9_10()) return true;
+    if (jj_3R_atribuicao_425_9_10()) return true;
     return false;
   }
 

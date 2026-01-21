@@ -2,26 +2,17 @@ import "lexico.java";
 
 void main()
 {
-	// Identificador inválido contendo o caractere '$'.
-	integer ff@ff;
+	// erro semântico
+	integer x;
+	integer x;
 	
-	// Caractere inválido.
-	@
+	x = j;
 	
-	// String inválida
-	"aaaaa
-
-	// Declaração de variável sem o ';' no final.
-	float y
-
-	// Expressão de atribuição incompleta. Falta um operando após '*'.
-	y = 5 * ;
-
-	// Estrutura condicional 'if' sem o corpo (bloco de comandos).
-	if(y > 10)
-
-	// Chamada de função com parênteses não fechados.
-	soma(5, 8;
+	// erro léxico
+	double @var;
+	
+	// erro sintático
+	character c
 }
 
 integer soma(integer a, integer b)

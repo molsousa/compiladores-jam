@@ -4,6 +4,7 @@ import java.util.LinkedList;
 public class No {
 	String tipo;
     String valor;
+    String tipoDado;
     LinkedList<No> filhos;
     
     public No(String tipo) {

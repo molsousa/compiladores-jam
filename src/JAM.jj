@@ -11,13 +11,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
 
 // Classe principal
 public class JAM
 {
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
+
+	public static Map<String, String> tabelaSemantica = new HashMap<>();
+    
     private static final int MAX = 32;
+
+    public void erroSemantico(String mensagem, Token t) {
+		System.err.println("Erro semântico (Linha: "+t.beginLine+ ", Coluna: "+t.beginColumn+ "): "+mensagem);
+    }
 
     public void escreverArvoresEmArquivo(LinkedList<No> arvores, String nomeArquivo) throws IOException {
         FileWriter writer = new FileWriter(nomeArquivo);
@@ -410,11 +419,30 @@ No atribuicao():
 	Token t;
 	No noAtrib = new No("ATRIBUICAO");
 	No expr;
+	String tipoVariavel = "unknown";
 }
 {
-   	t = <IDENTIFICADOR> { noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image)); }
+   	t = <IDENTIFICADOR> {
+		noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
+
+		if(tabelaSemantica.containsKey(t.image)) {
+			tipoVariavel = tabelaSemantica.get(t.image);
+		}
+		else {
+			
+		}
+	}
    	t = <ATRIBUICAO> { inserirTokenUnico(reservada, "ATRIBUICAO", t); }
-   	expr = expressao() { noAtrib.adicionarFilho(expr); }
+   	expr = expressao() {
+
+		noAtrib.adicionarFilho(expr);
+
+		if(!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
+			if(!tipoVariavel.equals(expr.tipoDado)) {
+				erroSemantico("Tipos incompatíveis. A variável '"+t.image+"' é "+tipoVariavel+", mas recebeu uma expressão do tipo: "+expr.tipoDado, t);
+			}
+		}
+	}
    	t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); }
    	{ return noAtrib; }
 }
@@ -583,12 +611,22 @@ No valor_base():
 }
 {
 	(
-	t = <INTEIRO> { no = new No("INTEIRO", t.image); }
-|   t = <REAL> { no = new No("REAL", t.image); }
-|   t = <STRING> { no = new No("STRING", t.image); }
-|   t = <TOKEN_TRUE> { no = new No("BOOLEANO", t.image); }
-|   t = <TOKEN_FALSE> { no = new No("BOOLEANO", t.image); }
-|   t = <IDENTIFICADOR> { no = new No("IDENTIFICADOR", t.image); }
+	t = <INTEIRO> { no = new No("INTEIRO", t.image); no.tipoDado = "integer"; }
+|   t = <REAL> { no = new No("REAL", t.image); no.tipoDado = "float"; }
+|   t = <STRING> { no = new No("STRING", t.image); no.tipoDado = "string"; }
+|   t = <TOKEN_TRUE> { no = new No("BOOLEANO", t.image); no.tipoDado = "boolean"; }
+|   t = <TOKEN_FALSE> { no = new No("BOOLEANO", t.image); no.tipoDado = "boolean"; }
+|   t = <IDENTIFICADOR> {
+  		no = new No("IDENTIFICADOR", t.image);
+
+		if(tabelaSemantica.containsKey(t.image)) {
+			no.tipoDado = tabelaSemantica.get(t.image);
+		}
+		else {
+			erroSemantico("A variável '"+t.image+"'não foi declarada.", t);
+			no.tipoDado = "erro";
+		}
+  	}
 |	t = <ABRE_PARENTESIS> { inserirTokenUnico(reservada, "ABRE_PARENTESIS", t); }
 	no = expressao()
 	t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
@@ -601,15 +639,18 @@ No declarar_variavel():
 {
     Token t, tipoToken;
     No noDecl = new No("DECLARACAO_VARIAVEL");
+    String tipoAtual = "";
 }
 {
-    ( tipoToken = <TOKEN_INT> 
-    | tipoToken = <TOKEN_FLOAT> 
-    | tipoToken = <TOKEN_CHAR> 
-    | tipoToken = <TOKEN_BOOL> 
-    | tipoToken = <TOKEN_DOUBLE>
-    | tipoToken = < TOKEN_VOID >
-    ) { noDecl.adicionarFilho(new No("TIPO", tipoToken.image));
+    ( tipoToken = <TOKEN_INT> { tipoAtual = "integer"; }
+    | tipoToken = <TOKEN_FLOAT> { tipoAtual = "float"; }
+    | tipoToken = <TOKEN_CHAR> { tipoAtual = "character"; }
+    | tipoToken = <TOKEN_BOOL> { tipoAtual = "boolean"; }
+    | tipoToken = <TOKEN_DOUBLE> { tipoAtual = "double"; }
+    | tipoToken = < TOKEN_VOID > { tipoAtual = "void"; }
+    )
+    {
+      	noDecl.adicionarFilho(new No("TIPO", tipoToken.image));
 		inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     }
 
@@ -620,6 +661,13 @@ No declarar_variavel():
         }
 
         inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+
+        if(tabelaSemantica.containsKey(t.image)) {
+			erroSemantico("A variável '"+t.image+"' já foi declarada anteriormente.", t);
+        }
+        else {
+			tabelaSemantica.put(t.image, tipoAtual);
+        }
     }
     ( 
       t = <VIRGULA> { inserirTokenUnico(reservada, "VIRGULA", t); }
@@ -630,6 +678,13 @@ No declarar_variavel():
           }
 
           inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+
+          if(tabelaSemantica.containsKey(t.image)) {
+			erroSemantico("A variável '"+t.image+"' já foi declarada anteriormente.", t);
+          }
+          else {
+			tabelaSemantica.put(t.image, tipoAtual);
+          }
       }
     )*
     t = <PONTO_VIRGULA> { inserirTokenUnico(reservada, "PONTO_VIRGULA", t); }
