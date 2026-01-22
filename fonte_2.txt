@@ -9,15 +9,15 @@ void main()
 	soma(x);
 	
 	// erro léxico
-	double @var;
+	// double @var;
 	
 	// erro sintático
-	character c
+	// character c
 }
 
 integer soma(integer a) {
 	
-	integer a;
+	integer a = 6.45;
 	integer b;
 	
 	a = 5;

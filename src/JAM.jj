@@ -830,7 +830,7 @@ No valor_base() : {
         no.tipoDado = tabelaSemantica.lastElement().get(t.image);
       }
       else{
-        erroSemantico("A variável '" + t.image + "'não foi declarada.", t);
+        erroSemantico("A variável '" + t.image + "' não foi declarada.", t);
         no.tipoDado = "erro";
       }
     }
@@ -850,7 +850,10 @@ No valor_base() : {
 No declarar_variavel() : {
   Token t, tipoToken;
   No noDecl = new No("DECLARACAO_VARIAVEL");
+  No expr;
   String tipoAtual = "";
+  No noAtrib = new No("ATRIBUICAO");
+  String tipoVariavel = "unknown";
 }
 {
   (
@@ -892,27 +895,49 @@ No declarar_variavel() : {
       tabelaSemantica.lastElement().put(t.image, tipoAtual);
     }
   }
-  (
-    t = < VIRGULA > {
-      inserirTokenUnico(reservada, "VIRGULA", t);
-    }
-    t = < IDENTIFICADOR > {
-      noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
-      
-      if (t.image.length() > MAX) {
-        System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
-      }
-      
-      inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-      
-      if (tabelaSemantica.lastElement().containsKey(t.image)) {
-        erroSemantico("A variável '" + t.image + "' já foi declarada anteriormente.", t);
-      }
-      else {
-        tabelaSemantica.lastElement().put(t.image, tipoAtual);
-      }
-    }
-  )*
+  (    (
+	    t = < VIRGULA > {
+	      inserirTokenUnico(reservada, "VIRGULA", t);
+	    }
+	    t = < IDENTIFICADOR > {
+	      noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
+	      
+	      if (t.image.length() > MAX) {
+	        System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+	      }
+	      
+	      inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+	      
+	      if (tabelaSemantica.lastElement().containsKey(t.image)) {
+	        erroSemantico("A variável '" + t.image + "' já foi declarada anteriormente.", t);
+	      }
+	      else {
+	        tabelaSemantica.lastElement().put(t.image, tipoAtual);
+	      }
+	    }
+	  )* (
+	    { 
+			if (tabelaSemantica.lastElement().containsKey(t.image)) {
+				tipoVariavel = tabelaSemantica.lastElement().get(t.image);
+			}
+			else {
+				erroSemantico("Variável não declarada: " + t.image, t);
+			}
+		}
+	    	    < ATRIBUICAO > {
+			inserirTokenUnico(reservada, "ATRIBUICAO", t);
+		}
+	  	expr = expressao() {
+		    noAtrib.adicionarFilho(expr);
+		    
+		    if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
+		      if (!tipoVariavel.equals(expr.tipoDado)) {
+		        erroSemantico("Tipos incompatíveis: variável do tipo '" + tipoVariavel + "', recebe uma expressão do tipo: " + expr.tipoDado, t);
+		      }
+		    }
+	  }
+	)?
+  )
   t = < PONTO_VIRGULA > {
     inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
   } {
@@ -1091,7 +1116,7 @@ No lista_de_parametros() :
       inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
     } {
       if (tabelaSemantica.lastElement().containsKey(t.image)) {
-		erroSemantico("A variável: " + t.image + "já foi declarada!", t);
+		erroSemantico("A variável: " + t.image + " já foi declarada!", t);
       }
       else {
         tabelaSemantica.lastElement().put(t.image, tipoParam);

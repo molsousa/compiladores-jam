@@ -2,7 +2,7 @@ import "lexico.java";
 
 void main()
 {
-	integer x;
+	integer x = 12;
 	float y;
 	
 	soma(5, 8);

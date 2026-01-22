@@ -456,6 +456,7 @@ inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
     t = jj_consume_token(IDENTIFICADOR);
 noRead.adicionarFilho(new No("IDENTIFICADOR", t.image));
     inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+
     if (t.image.length() > MAX) {
       System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
     }
@@ -504,6 +505,7 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
   String tipoVariavel = "unknown";
     t = jj_consume_token(IDENTIFICADOR);
 noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
+
                 if (tabelaSemantica.lastElement().containsKey(t.image)) {
                         tipoVariavel = tabelaSemantica.lastElement().get(t.image);
                 }
@@ -514,6 +516,7 @@ noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
 inserirTokenUnico(reservada, "ATRIBUICAO", t);
     expr = expressao();
 noAtrib.adicionarFilho(expr);
+
             if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
               if (!tipoVariavel.equals(expr.tipoDado)) {
                 erroSemantico("Tipos incompat\u00edveis: vari\u00e1vel do tipo '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: " + expr.tipoDado, t);
@@ -696,9 +699,9 @@ inserirTokenUnico(reservada, "SUBTRACAO", t);
       }
       dir = termo();
 No opNode = new No("OPERACAO", t.image);
-  opNode.adicionarFilho(esq);
-  opNode.adicionarFilho(dir);
-  esq = opNode;
+                opNode.adicionarFilho(esq);
+                opNode.adicionarFilho(dir);
+                esq = opNode;
     }
 {if ("" != null) return esq;}
     throw new Error("Missing return statement in function");
@@ -832,6 +835,7 @@ no = new No("BOOLEANO", t.image);
     case IDENTIFICADOR:{
       t = jj_consume_token(IDENTIFICADOR);
 no = new No("IDENTIFICADOR", t.image);
+
       if (tabelaSemantica.lastElement().containsKey(t.image)) {
         no.tipoDado = tabelaSemantica.lastElement().get(t.image);
       }
@@ -861,7 +865,10 @@ inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
 // Função para declarar variáveis
   final public No declarar_variavel() throws ParseException {Token t, tipoToken;
   No noDecl = new No("DECLARACAO_VARIAVEL");
+  No expr;
   String tipoAtual = "";
+  No noAtrib = new No("ATRIBUICAO");
+  String tipoVariavel = "unknown";
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:{
       tipoToken = jj_consume_token(TOKEN_INT);
@@ -902,6 +909,7 @@ noDecl.adicionarFilho(new No("TIPO", tipoToken.image));
     inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     t = jj_consume_token(IDENTIFICADOR);
 noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
+
     if (t.image.length() > MAX) {
       System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
     }
@@ -929,16 +937,43 @@ noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
 inserirTokenUnico(reservada, "VIRGULA", t);
       t = jj_consume_token(IDENTIFICADOR);
 noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
-      if (t.image.length() > MAX) {
-        System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+
+              if (t.image.length() > MAX) {
+                System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+              }
+
+              inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+
+              if (tabelaSemantica.lastElement().containsKey(t.image)) {
+                erroSemantico("A vari\u00e1vel '" + t.image + "' j\u00e1 foi declarada anteriormente.", t);
+              }
+              else {
+                tabelaSemantica.lastElement().put(t.image, tipoAtual);
+              }
+    }
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case ATRIBUICAO:{
+if (tabelaSemantica.lastElement().containsKey(t.image)) {
+                                tipoVariavel = tabelaSemantica.lastElement().get(t.image);
+                        }
+                        else {
+                                erroSemantico("Vari\u00e1vel n\u00e3o declarada: " + t.image, t);
+                        }
+      jj_consume_token(ATRIBUICAO);
+inserirTokenUnico(reservada, "ATRIBUICAO", t);
+      expr = expressao();
+noAtrib.adicionarFilho(expr);
+
+                    if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
+                      if (!tipoVariavel.equals(expr.tipoDado)) {
+                        erroSemantico("Tipos incompat\u00edveis: vari\u00e1vel do tipo '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: " + expr.tipoDado, t);
+                      }
+                    }
+      break;
       }
-      inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-      if (tabelaSemantica.lastElement().containsKey(t.image)) {
-        erroSemantico("A vari\u00e1vel '" + t.image + "' j\u00e1 foi declarada anteriormente.", t);
-      }
-      else {
-        tabelaSemantica.lastElement().put(t.image, tipoAtual);
-      }
+    default:
+      jj_la1[23] = jj_gen;
+      ;
     }
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
@@ -952,9 +987,11 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
   No args = null;
     t = jj_consume_token(IDENTIFICADOR);
 noChamada.adicionarFilho(new No("IDENTIFICADOR", t.image));
+
     if (t.image.length() > MAX) {
       System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
     }
+
     inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
     t = jj_consume_token(ABRE_PARENTESIS);
 inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
@@ -972,7 +1009,7 @@ inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
       break;
       }
     default:
-      jj_la1[23] = jj_gen;
+      jj_la1[24] = jj_gen;
       ;
     }
 noChamada.adicionarFilho(args != null ? args : new No("LISTA_ARGUMENTOS_VAZIA"));
@@ -998,7 +1035,7 @@ noLista.adicionarFilho(expr);
         break;
         }
       default:
-        jj_la1[24] = jj_gen;
+        jj_la1[25] = jj_gen;
         break label_8;
       }
       t = jj_consume_token(VIRGULA);
@@ -1042,7 +1079,7 @@ noLista.adicionarFilho(expr);
       break;
       }
     default:
-      jj_la1[25] = jj_gen;
+      jj_la1[26] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1050,9 +1087,11 @@ noFuncao.adicionarFilho(new No("TIPO_RETORNO", tipoToken.image));
     inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     t = jj_consume_token(IDENTIFICADOR);
 noFuncao.adicionarFilho(new No("IDENTIFICADOR", t.image));
+
     if (t.image.length() > MAX) {
       System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
     }
+
     inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
     t = jj_consume_token(ABRE_PARENTESIS);
 inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
@@ -1066,7 +1105,7 @@ inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
       break;
       }
     default:
-      jj_la1[26] = jj_gen;
+      jj_la1[27] = jj_gen;
       ;
     }
 noFuncao.adicionarFilho(params != null ? params : new No("LISTA_PARAMETROS_VAZIA"));
@@ -1114,7 +1153,7 @@ tipoParam = "double";
       break;
       }
     default:
-      jj_la1[27] = jj_gen;
+      jj_la1[28] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1122,10 +1161,12 @@ inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     t = jj_consume_token(IDENTIFICADOR);
 inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
 tabelaSemantica.lastElement().put(t.image, tipoParam);
+
     No noParam = new No("PARAMETRO");
     noParam.adicionarFilho(new No("TIPO", tipoToken.image));
     noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
     noLista.adicionarFilho(noParam);
+
     if (t.image.length() > MAX) {
       System.out.println("IDENTIFICADOR_LONGO: " + t.image);
     }
@@ -1137,7 +1178,7 @@ tabelaSemantica.lastElement().put(t.image, tipoParam);
         break;
         }
       default:
-        jj_la1[28] = jj_gen;
+        jj_la1[29] = jj_gen;
         break label_9;
       }
       t = jj_consume_token(VIRGULA);
@@ -1164,7 +1205,7 @@ inserirTokenUnico(reservada, "VIRGULA", t);
         break;
         }
       default:
-        jj_la1[29] = jj_gen;
+        jj_la1[30] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1175,14 +1216,15 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
                 erroSemantico("A vari\u00e1vel: " + t.image + "j\u00e1 foi declarada!", t);
       }
       else {
-                tabelaSemantica.lastElement().put(t.image, tipoParam);
+        tabelaSemantica.lastElement().put(t.image, tipoParam);
       }
       No noParam1 = new No("PARAMETRO");
       noParam.adicionarFilho(new No("TIPO", tipoToken.image));
       noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
       noLista.adicionarFilho(noParam);
+
       if (t.image.length() > MAX) {
-                System.out.println("IDENTIFICADOR_LONGO: " + t.image);
+        System.out.println("IDENTIFICADOR_LONGO: " + t.image);
       }
     }
 {if ("" != null) return noLista;}
@@ -1197,7 +1239,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_572_9_10()
+  private boolean jj_3R_atribuicao_573_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1206,7 +1248,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_572_9_10()) return true;
+    if (jj_3R_atribuicao_573_9_10()) return true;
     return false;
   }
 
@@ -1221,7 +1263,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[30];
+  final private int[] jj_la1 = new int[31];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -1229,10 +1271,10 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x107e000,0x107e000,0x60fec80,0x7e000,0x6080c80,0x100,0x0,0x10300000,0x0,0x10300000,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x10000000,0x10300000,0x300000,0x7e000,0x0,0x10300000,0x0,0x7e000,0x7c000,0x7c000,0x0,0x7c000,};
+	   jj_la1_0 = new int[] {0x107e000,0x107e000,0x60fec80,0x7e000,0x6080c80,0x100,0x0,0x10300000,0x0,0x10300000,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x10000000,0x10300000,0x300000,0x7e000,0x0,0x0,0x10300000,0x0,0x7e000,0x7c000,0x7c000,0x0,0x7c000,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x0,0x0,0x200400,0x0,0x200400,0x0,0x200000,0x788100,0x200000,0x788100,0x200,0x80,0x7e,0x7e,0x0,0x0,0x0,0x0,0x100,0x788100,0x788000,0x0,0x800,0x788100,0x800,0x0,0x0,0x0,0x800,0x0,};
+	   jj_la1_1 = new int[] {0x0,0x0,0x200400,0x0,0x200400,0x0,0x200000,0x788100,0x200000,0x788100,0x200,0x80,0x7e,0x7e,0x0,0x0,0x0,0x0,0x100,0x788100,0x788000,0x0,0x800,0x1,0x788100,0x800,0x0,0x0,0x0,0x800,0x0,};
 	}
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1249,7 +1291,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 30; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 31; i++) jj_la1[i] = -1;
 	 for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1264,7 +1306,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 30; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 31; i++) jj_la1[i] = -1;
 	 for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1275,7 +1317,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 30; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 31; i++) jj_la1[i] = -1;
 	 for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1294,7 +1336,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 30; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 31; i++) jj_la1[i] = -1;
 	 for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1304,7 +1346,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 30; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 31; i++) jj_la1[i] = -1;
 	 for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1314,7 +1356,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 30; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 31; i++) jj_la1[i] = -1;
 	 for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1450,7 +1492,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 30; i++) {
+	 for (int i = 0; i < 31; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {
