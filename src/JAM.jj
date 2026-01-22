@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 // Classe principal
 public class JAM
@@ -20,7 +21,7 @@ public class JAM
     public static LinkedList<InfoToken> reservada = new LinkedList<>();
     public static LinkedList<InfoToken> simbolo = new LinkedList<>();
 
-	public static Map<String, String> tabelaSemantica = new HashMap<>();
+	public static Stack<Map<String, String>> tabelaSemantica = new Stack<>();
     
     private static final int MAX = 32;
 
@@ -212,7 +213,9 @@ void inicializar_programa():
 {
 	(
 		( arvoreAtual = inclusao_biblioteca() { if(arvoreAtual != null) arvores.add(arvoreAtual); } )
-	  | ( arvoreAtual = criar_funcoes() { if(arvoreAtual != null) arvores.add(arvoreAtual); } )
+	  | ( arvoreAtual = criar_funcoes() {
+	    	if(arvoreAtual != null) arvores.add(arvoreAtual);
+	    } )
 	)*
   	<EOF> 
   	{ 
@@ -425,11 +428,11 @@ No atribuicao():
    	t = <IDENTIFICADOR> {
 		noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
 
-		if(tabelaSemantica.containsKey(t.image)) {
-			tipoVariavel = tabelaSemantica.get(t.image);
+		if(tabelaSemantica.lastElement().containsKey(t.image)) {
+			tipoVariavel = tabelaSemantica.lastElement().get(t.image);
 		}
 		else {
-			
+			erroSemantico("Variável não declarada: "+t.image, t);
 		}
 	}
    	t = <ATRIBUICAO> { inserirTokenUnico(reservada, "ATRIBUICAO", t); }
@@ -552,7 +555,8 @@ No expressao_aritmetica():
 	( 
 	  ( t = <ADICAO> { inserirTokenUnico(reservada, "ADICAO", t); } 
 	  | t = <SUBTRACAO> { inserirTokenUnico(reservada, "SUBTRACAO", t); } )
-	  dir = termo() 
+	  dir = termo()
+		  
 	  {
 	    No opNode = new No("OPERACAO", t.image);
 	    opNode.adicionarFilho(esq);
@@ -619,8 +623,8 @@ No valor_base():
 |   t = <IDENTIFICADOR> {
   		no = new No("IDENTIFICADOR", t.image);
 
-		if(tabelaSemantica.containsKey(t.image)) {
-			no.tipoDado = tabelaSemantica.get(t.image);
+		if(tabelaSemantica.lastElement().containsKey(t.image)) {
+			no.tipoDado = tabelaSemantica.lastElement().get(t.image);
 		}
 		else {
 			erroSemantico("A variável '"+t.image+"'não foi declarada.", t);
@@ -662,11 +666,11 @@ No declarar_variavel():
 
         inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
 
-        if(tabelaSemantica.containsKey(t.image)) {
+        if(tabelaSemantica.lastElement().containsKey(t.image)) {
 			erroSemantico("A variável '"+t.image+"' já foi declarada anteriormente.", t);
         }
         else {
-			tabelaSemantica.put(t.image, tipoAtual);
+			tabelaSemantica.lastElement().put(t.image, tipoAtual);
         }
     }
     ( 
@@ -679,11 +683,11 @@ No declarar_variavel():
 
           inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
 
-          if(tabelaSemantica.containsKey(t.image)) {
+          if(tabelaSemantica.lastElement().containsKey(t.image)) {
 			erroSemantico("A variável '"+t.image+"' já foi declarada anteriormente.", t);
           }
           else {
-			tabelaSemantica.put(t.image, tipoAtual);
+			tabelaSemantica.lastElement().put(t.image, tipoAtual);
           }
       }
     )*
@@ -737,13 +741,15 @@ No criar_funcoes():
     No noFuncao = new No("DEFINICAO_FUNCAO");
     No params = null;
     No bloco;
+  	tabelaSemantica.push(new HashMap<>());
 }
 {
-    ( tipoToken = <TOKEN_VOID>
-    | tipoToken = <TOKEN_INT>
-    | tipoToken = <TOKEN_FLOAT>
-    | tipoToken = <TOKEN_CHAR>
-    | tipoToken = <TOKEN_BOOL>
+  	
+    ( tipoToken = <TOKEN_VOID>  
+    | tipoToken = <TOKEN_INT>  
+    | tipoToken = <TOKEN_FLOAT>  
+    | tipoToken = <TOKEN_CHAR>  
+    | tipoToken = <TOKEN_BOOL>  
     | tipoToken = <TOKEN_DOUBLE> 
     ) { noFuncao.adicionarFilho(new No("TIPO_RETORNO", tipoToken.image));
 
@@ -763,7 +769,10 @@ No criar_funcoes():
     t = <FECHA_PARENTESIS> { inserirTokenUnico(reservada, "FECHA_PARENTESIS", t); }
     t = <ABRE_CHAVES> { inserirTokenUnico(reservada, "ABRE_CHAVES", t); }
     bloco = bloco_de_comandos() { noFuncao.adicionarFilho(bloco); }
-    t = <FECHA_CHAVES> { inserirTokenUnico(reservada, "FECHA_CHAVES", t); }
+    t = <FECHA_CHAVES> {
+      	inserirTokenUnico(reservada, "FECHA_CHAVES", t);
+      	tabelaSemantica.pop();
+	}
     { return noFuncao; }
 }
 
@@ -772,19 +781,22 @@ No lista_de_parametros():
 {
     Token t, tipoToken;
     No noLista = new No("LISTA_PARAMETROS");
+    String tipoParam = "";
 }
 {
     // Primeiro parâmetro
-    ( tipoToken = <TOKEN_INT>
-    | tipoToken = <TOKEN_FLOAT>
-    | tipoToken = <TOKEN_CHAR>
-    | tipoToken = <TOKEN_BOOL>
-    | tipoToken = <TOKEN_DOUBLE>
+    ( tipoToken = <TOKEN_INT> { tipoParam = "integer"; }
+    | tipoToken = <TOKEN_FLOAT> { tipoParam = "float"; }
+    | tipoToken = <TOKEN_CHAR> { tipoParam = "character"; }
+    | tipoToken = <TOKEN_BOOL> { tipoParam = "boolean"; }
+    | tipoToken = <TOKEN_DOUBLE> { tipoParam = "double"; }
     )
     { inserirTokenUnico(reservada, "TIPO_DADO", tipoToken); }
     
     t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
     {
+		tabelaSemantica.lastElement().put(t.image, tipoParam);
+      
         No noParam = new No("PARAMETRO");
         noParam.adicionarFilho(new No("TIPO", tipoToken.image));
         noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
@@ -806,6 +818,13 @@ No lista_de_parametros():
       { inserirTokenUnico(reservada, "TIPO_DADO", tipoToken); }
 	  	t = <IDENTIFICADOR> { inserirTokenUnico(simbolo, "IDENTIFICADOR", t); }
       {
+		  if(tabelaSemantica.lastElement().containsKey(t.image)) {
+				erroSemantico("A variável: "+t.image+"já foi declarada!", t);
+		  }
+		  else {
+				tabelaSemantica.lastElement().put(t.image, tipoParam);
+		  }
+        
           No noParam1 = new No("PARAMETRO");
           noParam.adicionarFilho(new No("TIPO", tipoToken.image));
           noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
