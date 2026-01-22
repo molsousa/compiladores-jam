@@ -12,120 +12,113 @@ import java.util.Stack;
 
 // Classe principal
 public class JAM implements JAMConstants {
-    public static LinkedList<InfoToken> reservada = new LinkedList<>();
-    public static LinkedList<InfoToken> simbolo = new LinkedList<>();
+  public static LinkedList < InfoToken > reservada = new LinkedList < > ();
+  public static LinkedList < InfoToken > simbolo = new LinkedList < > ();
+  public static Stack < Map < String, String > > tabelaSemantica = new Stack < > ();
+  private static final int MAX = 32;
 
-        public static Stack<Map<String, String>> tabelaSemantica = new Stack<>();
+  public void erroSemantico(String mensagem, Token t) {
+                    System.err.println("Erro sem\u00e2ntico (Linha: " + t.beginLine + ", Coluna: " + t.beginColumn + "): " + mensagem);
+  }
 
-    private static final int MAX = 32;
-
-    public void erroSemantico(String mensagem, Token t) {
-                System.err.println("Erro sem\u00e2ntico (Linha: "+t.beginLine+ ", Coluna: "+t.beginColumn+ "): "+mensagem);
+  public void escreverArvoresEmArquivo(LinkedList < No > arvores, String nomeArquivo) throws IOException {
+    FileWriter writer = new FileWriter(nomeArquivo);
+    writer.write("--- IN\u00cdCIO DA \u00c1RVORE SINT\u00c1TICA ---\n\n");
+    for (No raiz : arvores)
+    {
+      escreverNoRecursivo(raiz, 0, writer);
+      writer.write("\n");
     }
+    writer.write("--- FIM DA \u00c1RVORE SINT\u00c1TICA ---\n");
+    writer.close();
+  }
 
-    public void escreverArvoresEmArquivo(LinkedList<No> arvores, String nomeArquivo) throws IOException {
-        FileWriter writer = new FileWriter(nomeArquivo);
-        writer.write("--- IN\u00cdCIO DA \u00c1RVORE SINT\u00c1TICA ---\n\n");
-        for (No raiz : arvores) {
-            escreverNoRecursivo(raiz, 0, writer);
-            writer.write("\n");
+  private void escreverNoRecursivo(No no, int nivel, FileWriter writer) throws IOException {
+    if (no == null) {
+        return;
         }
-        writer.write("--- FIM DA \u00c1RVORE SINT\u00c1TICA ---\n");
-        writer.close();
+
+    for (int i = 0; i < nivel; i++) {
+      writer.write("  ");
     }
-
-    private void escreverNoRecursivo(No no, int nivel, FileWriter writer) throws IOException {
-        if (no == null) return;
-
-        for (int i = 0; i < nivel; i++) {
-            writer.write("  ");
-        }
-
-        writer.write("- " + no.tipo);
-        if (no.valor != null) {
-            writer.write(": <" + no.valor + ">");
-        }
-        writer.write("\n");
-
-        for (No filho : no.filhos) {
-            escreverNoRecursivo(filho, nivel + 1, writer);
-        }
+    writer.write("- " + no.tipo);
+    if (no.valor != null) {
+      writer.write(": <" + no.valor + ">");
     }
+    writer.write("\n");
+    for (No filho : no.filhos) {
+      escreverNoRecursivo(filho, nivel + 1, writer);
+    }
+  }
 
-    public static void main(String[] args) throws ParseException, TokenMgrError, FileNotFoundException {
-        JAM parser;
-        FileInputStream arquivo;
-        Scanner scanner = new Scanner(System.in);
-        int opcao;
+  public static void main(String [] args) throws ParseException, TokenMgrError, FileNotFoundException {
+    JAM parser;
+    FileInputStream arquivo;
+    Scanner scanner = new Scanner(System.in);
+    int opcao;
 
-        System.out.print("Insira o nome do arquivos: ");
+    System.out.print("Insira o nome do arquivos: ");
+    try {
+      arquivo = new FileInputStream(scanner.nextLine());
+    } catch(FileNotFoundException e) {
+      System.out.println(e);
+      return;
+    }
+    try {
+      parser = new JAM(arquivo);
+      parser.inicializar_programa();
+                do {
+                System.out.println("1 - Imprimir tabela de simbolos");
+                System.out.println("2 - Imprimir tabela de palavras reservadas");
+                System.out.println("0 - Sair");
+                System.out.print("Selecione uma opcao:");
+                opcao = scanner.nextInt();
 
-        try {
-            arquivo = new FileInputStream(scanner.nextLine());
-        }
-        catch(FileNotFoundException e) {
-            System.out.println(e);
-            return;
-        }
-
-        try {
-            parser = new JAM(arquivo);
-            parser.inicializar_programa();
-
-                        do {
-                                System.out.println("1 - Imprimir tabela de simbolos");
-                                System.out.println("2 - Imprimir tabela de palavras reservadas");
-                                System.out.println("0 - Sair");
-                                System.out.print("Selecione uma opcao:");
-                    opcao = scanner.nextInt();
-
-                    switch(opcao) {
-                                        case 1:
-                                                imprimirTokens(simbolo);
-                                                break;
-                                        case 2:
-                                                imprimirTokens(reservada);
-                                                break;
-                                        case 0:
-                                                System.out.println("Obrigado!!");
-                                                break;
-                                        default:
-                                                System.out.println("Op\u00e7\u00e3o incorreta!");
-                                                break;
-                    }
-                }while(opcao != 0);
+                switch (opcao){
+                  case 1 :
+                          imprimirTokens(simbolo);
+                          break;
+                  case 2 :
+                          imprimirTokens(reservada);
+                          break;
+                  case 0 :
+                          System.out.println("Obrigado!!");
+                          break;
+                  default :
+                          System.out.println("Op\u00e7\u00e3o incorreta!");
+                          break;
                 }
-        catch(TokenMgrError e) {
-            System.out.println("Erro l\u00e9xico: " + e.getMessage());
-        }
-                catch(ParseException e) {
-            System.out.println("Erro de sintaxe: " + e.getMessage());
-        }
-        scanner.close();
+              }while (opcao != 0);
+    } catch (TokenMgrError e) {
+      System.out.println("Erro l\u00e9xico: " + e.getMessage());
+    } catch (ParseException e) {
+      System.out.println("Erro de sintaxe: " + e.getMessage());
     }
+    scanner.close();
+  }
 
-    public void inserirTokenUnico(LinkedList<InfoToken> l, String tipo, Token t) {
-        for(InfoToken tok : l) {
-            if(tok.lexema.equals(t.image)) {
-                return;
-            }
-        }
-        l.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
+  public void inserirTokenUnico(LinkedList < InfoToken > l, String tipo, Token t) {
+    for (InfoToken tok : l) {
+      if (tok.lexema.equals(t.image)) {
+        return;
+      }
     }
+    l.add(new InfoToken(tipo, t.image, t.beginLine, t.beginColumn));
+  }
 
-    public static void imprimirTokens(LinkedList<InfoToken> l) {
-        if(l.isEmpty()) {
-            System.out.println("Lista vazia");
-            return;
-        }
-        for(InfoToken tok : l) {
-            System.out.println(tok);
-        }
+  public static void imprimirTokens(LinkedList < InfoToken > l) {
+    if (l.isEmpty()) {
+      System.out.println("Lista vazia");
+      return;
     }
+    for (InfoToken tok : l) {
+      System.out.println(tok);
+    }
+  }
 
 // 1. BIBLIOTECAS
-  final public void inicializar_programa() throws ParseException {LinkedList<No> arvores = new LinkedList<>();
-    No arvoreAtual;
+  final public void inicializar_programa() throws ParseException {LinkedList < No > arvores = new LinkedList < > ();
+  No arvoreAtual;
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -146,7 +139,7 @@ public class JAM implements JAMConstants {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case TOKEN_IMPORT:{
         arvoreAtual = inclusao_biblioteca();
-if(arvoreAtual != null) arvores.add(arvoreAtual);
+if (arvoreAtual != null) arvores.add(arvoreAtual);
         break;
         }
       case TOKEN_VOID:
@@ -156,7 +149,7 @@ if(arvoreAtual != null) arvores.add(arvoreAtual);
       case TOKEN_CHAR:
       case TOKEN_BOOL:{
         arvoreAtual = criar_funcoes();
-if(arvoreAtual != null) arvores.add(arvoreAtual);
+if (arvoreAtual != null) arvores.add(arvoreAtual);
         break;
         }
       default:
@@ -167,21 +160,24 @@ if(arvoreAtual != null) arvores.add(arvoreAtual);
     }
     jj_consume_token(0);
 System.out.println("An\u00e1lise sint\u00e1tica finalizada");
-            try {
-                escreverArvoresEmArquivo(arvores, "arvores_fonte1.txt");
-                System.out.println("Arquivo arvores_fonte1.txt gerado.\n");
+            try
+    {
+              escreverArvoresEmArquivo(arvores, "arvores_fonte1.txt");
+              System.out.println("Arquivo arvores_fonte1.txt gerado.\n");
             }
-            catch (IOException e) {
-                System.err.println("Erro ao escrever o arquivo da \u00e1rvore: " + e.getMessage());
+            catch (IOException e)
+    {
+              System.err.println("Erro ao escrever o arquivo da \u00e1rvore: " + e.getMessage());
             }
 }
 
   final public No inclusao_biblioteca() throws ParseException {Token t;
-        No noImport = new No("IMPORT");
+          No noImport = new No("IMPORT");
     t = jj_consume_token(TOKEN_IMPORT);
 inserirTokenUnico(reservada, "IMPORT", t);
     t = jj_consume_token(STRING);
-noImport.adicionarFilho(new No("BIBLIOTECA", t.image)); inserirTokenUnico(simbolo, "STRING", t);
+noImport.adicionarFilho(new No("BIBLIOTECA", t.image));
+    inserirTokenUnico(simbolo, "STRING", t);
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 {if ("" != null) return noImport;}
@@ -190,7 +186,7 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // 2. BLOCO DE COMANDOS
   final public No bloco_de_comandos() throws ParseException {No noBloco = new No("BLOCO_COMANDOS");
-    No cmd;
+  No cmd;
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -216,7 +212,7 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
         break label_2;
       }
       // Para cada comando encontrado, captura seu nó e adiciona ao bloco
-                cmd = comando();
+                  cmd = comando();
 noBloco.adicionarFilho(cmd);
     }
 {if ("" != null) return noBloco;}
@@ -225,7 +221,7 @@ noBloco.adicionarFilho(cmd);
 
 // Regra unica de comando.
   final public No comando() throws ParseException {No noComando;
-    Token t;
+  Token t;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_VOID:
     case TOKEN_INT:
@@ -234,7 +230,7 @@ noBloco.adicionarFilho(cmd);
     case TOKEN_CHAR:
     case TOKEN_BOOL:{
       // 3. DECLARAÇÃO DE VARIÁVEIS
-              noComando = declarar_variavel();
+                noComando = declarar_variavel();
 {if ("" != null) return noComando;}
       break;
       }
@@ -282,7 +278,8 @@ noBloco.adicionarFilho(cmd);
           }
         case PONTO_VIRGULA:{
           t = jj_consume_token(PONTO_VIRGULA);
-inserirTokenUnico(reservada, "PONTO_VIRGULA", t);  {if ("" != null) return new No("COMANDO_VAZIO");}
+inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
+    {if ("" != null) return new No("COMANDO_VAZIO");}
           break;
           }
         default:
@@ -297,10 +294,10 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);  {if ("" != null) return new N
 
 // Estrutura condicional if/else.
   final public No if_else() throws ParseException {No noIf = new No("ESTRUTURA_IF");
-    No condicao;
-    No blocoPrincipal;
-    No blocoSenao = null;
-    Token t;
+  No condicao;
+  No blocoPrincipal;
+  No blocoSenao = null;
+  Token t;
     t = jj_consume_token(TOKEN_IF);
 inserirTokenUnico(reservada, "IF", t);
     t = jj_consume_token(ABRE_PARENTESIS);
@@ -330,8 +327,8 @@ noIf.adicionarFilho(blocoSenao);
 }
 
   final public No senao() throws ParseException {No noElse = new No("BLOCO_ELSE");
-    No bloco;
-    Token t;
+  No bloco;
+  Token t;
     t = jj_consume_token(TOKEN_ELSE);
 inserirTokenUnico(reservada, "ELSE", t);
     t = jj_consume_token(ABRE_CHAVES);
@@ -346,9 +343,9 @@ inserirTokenUnico(reservada, "FECHA_CHAVES", t);
 
 // Laço de repetição while.
   final public No laco_while() throws ParseException {No noWhile = new No("LACO_WHILE");
-        No condicao;
-        No bloco;
-        Token t;
+          No condicao;
+          No bloco;
+          Token t;
     t = jj_consume_token(TOKEN_WHILE);
 inserirTokenUnico(reservada, "WHILE", t);
     t = jj_consume_token(ABRE_PARENTESIS);
@@ -369,11 +366,11 @@ inserirTokenUnico(reservada, "FECHA_CHAVES", t);
 
 // Laço de repetição for.
   final public No laco_for() throws ParseException {No noFor = new No("LACO_FOR");
-        No inicializacao = null;
-        No condicao = null;
-        No incremento = null;
-        No bloco;
-        Token t;
+          No inicializacao = null;
+          No condicao = null;
+          No incremento = null;
+          No bloco;
+          Token t;
     t = jj_consume_token(TOKEN_FOR);
 inserirTokenUnico(reservada, "FOR", t);
     t = jj_consume_token(ABRE_PARENTESIS);
@@ -434,8 +431,8 @@ inserirTokenUnico(reservada, "FECHA_CHAVES", t);
 
 // Comando de escrita de dados.
   final public No comando_escrita() throws ParseException {No noWrite = new No("ESCRITA");
-        No args;
-        Token t;
+          No args;
+          Token t;
     t = jj_consume_token(TOKEN_WRITE);
 inserirTokenUnico(reservada, "WRITE", t);
     t = jj_consume_token(ABRE_PARENTESIS);
@@ -452,13 +449,18 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // Comando de leitura de dados.
   final public No comando_leitura() throws ParseException {Token t;
-        No noRead = new No("LEITURA");
+          No noRead = new No("LEITURA");
     t = jj_consume_token(TOKEN_READ);
 inserirTokenUnico(reservada, "READ", t);
     t = jj_consume_token(ABRE_PARENTESIS);
 inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
     t = jj_consume_token(IDENTIFICADOR);
-noRead.adicionarFilho(new No("IDENTIFICADOR", t.image)); inserirTokenUnico(simbolo, "IDENTIFICADOR", t); if(t.image.length() > MAX){ System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image); }
+noRead.adicionarFilho(new No("IDENTIFICADOR", t.image));
+    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+    if (t.image.length() > MAX)
+    {
+      System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+    }
     t = jj_consume_token(FECHA_PARENTESIS);
 inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
     t = jj_consume_token(PONTO_VIRGULA);
@@ -469,8 +471,8 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // Comando de retorno de função.
   final public No retorno() throws ParseException {No noReturn = new No("RETORNO");
-        No expr = null;
-        Token t;
+          No expr = null;
+          Token t;
     t = jj_consume_token(TOKEN_RETURN);
 inserirTokenUnico(reservada, "RETURN", t);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -490,7 +492,7 @@ inserirTokenUnico(reservada, "RETURN", t);
       jj_la1[9] = jj_gen;
       ;
     }
-if(expr != null) noReturn.adicionarFilho(expr);
+if (expr != null) noReturn.adicionarFilho(expr);
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 {if ("" != null) return noReturn;}
@@ -499,28 +501,30 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // 11. ATRIBUIÇÕES
   final public No atribuicao() throws ParseException {Token t;
-        No noAtrib = new No("ATRIBUICAO");
-        No expr;
-        String tipoVariavel = "unknown";
+          No noAtrib = new No("ATRIBUICAO");
+          No expr;
+          String tipoVariavel = "unknown";
     t = jj_consume_token(IDENTIFICADOR);
 noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
-
-                if(tabelaSemantica.lastElement().containsKey(t.image)) {
-                        tipoVariavel = tabelaSemantica.lastElement().get(t.image);
-                }
-                else {
-                        erroSemantico("Vari\u00e1vel n\u00e3o declarada: "+t.image, t);
-                }
+                    if (tabelaSemantica.lastElement().containsKey(t.image))
+    {
+                              tipoVariavel = tabelaSemantica.lastElement().get(t.image);
+                    }
+                    else
+    {
+                              erroSemantico("Vari\u00e1vel n\u00e3o declarada: " + t.image, t);
+                    }
     t = jj_consume_token(ATRIBUICAO);
 inserirTokenUnico(reservada, "ATRIBUICAO", t);
     expr = expressao();
 noAtrib.adicionarFilho(expr);
-
-                if(!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
-                        if(!tipoVariavel.equals(expr.tipoDado)) {
-                                erroSemantico("Tipos incompat\u00edveis. A vari\u00e1vel '"+t.image+"' \u00e9 "+tipoVariavel+", mas recebeu uma express\u00e3o do tipo: "+expr.tipoDado, t);
-                        }
-                }
+                    if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro"))
+    {
+                              if (!tipoVariavel.equals(expr.tipoDado))
+      {
+                                        erroSemantico("Tipos incompat\u00edveis: vari\u00e1vel do tipo '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: " + expr.tipoDado, t);
+                              }
+                    }
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 {if ("" != null) return noAtrib;}
@@ -529,8 +533,8 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // Regra auxiliar para o laço 'for', que é uma atribuição sem o ponto e vírgula final.
   final public No atribuicao_simples() throws ParseException {Token t;
-        No noAtrib = new No("ATRIBUICAO_SIMPLES");
-        No expr;
+          No noAtrib = new No("ATRIBUICAO_SIMPLES");
+          No expr;
     t = jj_consume_token(IDENTIFICADOR);
 noAtrib.adicionarFilho(new No("IDENTIFICADOR", t.image));
     t = jj_consume_token(ATRIBUICAO);
@@ -550,7 +554,7 @@ noAtrib.adicionarFilho(expr);
 
 // 12. OPERADORES LÓGICOS (OR)
   final public No expressao_or() throws ParseException {Token t;
-        No esq, dir;
+          No esq, dir;
     esq = expressao_and();
     label_3:
     while (true) {
@@ -567,9 +571,9 @@ noAtrib.adicionarFilho(expr);
 inserirTokenUnico(reservada, "OR", t);
       dir = expressao_and();
 No opNode = new No("OPERACAO", t.image);
-        opNode.adicionarFilho(esq);
-        opNode.adicionarFilho(dir);
-        esq = opNode;
+      opNode.adicionarFilho(esq);
+      opNode.adicionarFilho(dir);
+      esq = opNode;
     }
 {if ("" != null) return esq;}
     throw new Error("Missing return statement in function");
@@ -577,7 +581,7 @@ No opNode = new No("OPERACAO", t.image);
 
 // 13. OPERADORES LÓGICOS (AND)
   final public No expressao_and() throws ParseException {Token t;
-        No esq, dir;
+          No esq, dir;
     esq = expressao_relacional();
     label_4:
     while (true) {
@@ -594,9 +598,9 @@ No opNode = new No("OPERACAO", t.image);
 inserirTokenUnico(reservada, "AND", t);
       dir = expressao_relacional();
 No opNode = new No("OPERACAO", t.image);
-        opNode.adicionarFilho(esq);
-        opNode.adicionarFilho(dir);
-        esq = opNode;
+      opNode.adicionarFilho(esq);
+      opNode.adicionarFilho(dir);
+      esq = opNode;
     }
 {if ("" != null) return esq;}
     throw new Error("Missing return statement in function");
@@ -604,7 +608,7 @@ No opNode = new No("OPERACAO", t.image);
 
 // 14. OPERADORES RELACIONAIS (==, !=, <, >, <=, >=)
   final public No expressao_relacional() throws ParseException {Token t;
-        No esq, dir;
+          No esq, dir;
     esq = expressao_aritmetica();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IGUAL:
@@ -651,9 +655,9 @@ inserirTokenUnico(reservada, "MAIOR_IGUAL", t);
       }
       dir = expressao_aritmetica();
 No opNode = new No("OPERACAO", t.image);
-          opNode.adicionarFilho(esq);
-          opNode.adicionarFilho(dir);
-          esq = opNode;
+      opNode.adicionarFilho(esq);
+      opNode.adicionarFilho(dir);
+      esq = opNode;
       break;
       }
     default:
@@ -666,7 +670,7 @@ No opNode = new No("OPERACAO", t.image);
 
 // 15. OPERADORES ARITMÉTICOS (+, -)
   final public No expressao_aritmetica() throws ParseException {Token t;
-        No esq, dir;
+          No esq, dir;
     esq = termo();
     label_5:
     while (true) {
@@ -698,9 +702,9 @@ inserirTokenUnico(reservada, "SUBTRACAO", t);
       }
       dir = termo();
 No opNode = new No("OPERACAO", t.image);
-            opNode.adicionarFilho(esq);
-            opNode.adicionarFilho(dir);
-            esq = opNode;
+              opNode.adicionarFilho(esq);
+              opNode.adicionarFilho(dir);
+              esq = opNode;
     }
 {if ("" != null) return esq;}
     throw new Error("Missing return statement in function");
@@ -708,7 +712,7 @@ No opNode = new No("OPERACAO", t.image);
 
 // 16. OPERADORES ARITMÉTICOS (*, /)
   final public No termo() throws ParseException {Token t;
-        No esq, dir;
+          No esq, dir;
     esq = fator();
     label_6:
     while (true) {
@@ -740,9 +744,9 @@ inserirTokenUnico(reservada, "DIVISAO", t);
       }
       dir = fator();
 No opNode = new No("OPERACAO", t.image);
-            opNode.adicionarFilho(esq);
-            opNode.adicionarFilho(dir);
-            esq = opNode;
+              opNode.adicionarFilho(esq);
+              opNode.adicionarFilho(dir);
+              esq = opNode;
     }
 {if ("" != null) return esq;}
     throw new Error("Missing return statement in function");
@@ -750,7 +754,7 @@ No opNode = new No("OPERACAO", t.image);
 
 // 17. OPERADORES UNÁRIOS (!, -)
   final public No fator() throws ParseException {Token t;
-        No no;
+          No no;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case SUBTRACAO:
     case NOT:{
@@ -765,7 +769,10 @@ opUnario.adicionarFilho(no);
         }
       case NOT:{
         t = jj_consume_token(NOT);
-No opUnario = new No("OP_UNARIO", t.image); no = fator(); opUnario.adicionarFilho(no); {if ("" != null) return opUnario;}
+No opUnario = new No("OP_UNARIO", t.image);
+      no = fator();
+      opUnario.adicionarFilho(no);
+      {if ("" != null) return opUnario;}
         break;
         }
       default:
@@ -796,44 +803,50 @@ No opUnario = new No("OP_UNARIO", t.image); no = fator(); opUnario.adicionarFilh
 
 // Base da recursão das expressões. Define os elementos atômicos.
   final public No valor_base() throws ParseException {Token t;
-    No no;
+  No no;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case INTEIRO:{
       t = jj_consume_token(INTEIRO);
-no = new No("INTEIRO", t.image); no.tipoDado = "integer";
+no = new No("INTEIRO", t.image);
+      no.tipoDado = "integer";
       break;
       }
     case REAL:{
       t = jj_consume_token(REAL);
-no = new No("REAL", t.image); no.tipoDado = "float";
+no = new No("REAL", t.image);
+      no.tipoDado = "float";
       break;
       }
     case STRING:{
       t = jj_consume_token(STRING);
-no = new No("STRING", t.image); no.tipoDado = "string";
+no = new No("STRING", t.image);
+      no.tipoDado = "string";
       break;
       }
     case TOKEN_TRUE:{
       t = jj_consume_token(TOKEN_TRUE);
-no = new No("BOOLEANO", t.image); no.tipoDado = "boolean";
+no = new No("BOOLEANO", t.image);
+      no.tipoDado = "boolean";
       break;
       }
     case TOKEN_FALSE:{
       t = jj_consume_token(TOKEN_FALSE);
-no = new No("BOOLEANO", t.image); no.tipoDado = "boolean";
+no = new No("BOOLEANO", t.image);
+      no.tipoDado = "boolean";
       break;
       }
     case IDENTIFICADOR:{
       t = jj_consume_token(IDENTIFICADOR);
 no = new No("IDENTIFICADOR", t.image);
-
-                if(tabelaSemantica.lastElement().containsKey(t.image)) {
-                        no.tipoDado = tabelaSemantica.lastElement().get(t.image);
-                }
-                else {
-                        erroSemantico("A vari\u00e1vel '"+t.image+"'n\u00e3o foi declarada.", t);
-                        no.tipoDado = "erro";
-                }
+                      if (tabelaSemantica.lastElement().containsKey(t.image))
+      {
+                                no.tipoDado = tabelaSemantica.lastElement().get(t.image);
+                      }
+                      else
+      {
+                                erroSemantico("A vari\u00e1vel '" + t.image + "'n\u00e3o foi declarada.", t);
+                                no.tipoDado = "erro";
+                      }
       break;
       }
     case ABRE_PARENTESIS:{
@@ -855,8 +868,8 @@ inserirTokenUnico(reservada, "FECHA_PARENTESIS", t);
 
 // Função para declarar variáveis
   final public No declarar_variavel() throws ParseException {Token t, tipoToken;
-    No noDecl = new No("DECLARACAO_VARIAVEL");
-    String tipoAtual = "";
+  No noDecl = new No("DECLARACAO_VARIAVEL");
+  String tipoAtual = "";
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:{
       tipoToken = jj_consume_token(TOKEN_INT);
@@ -894,21 +907,22 @@ tipoAtual = "void";
       throw new ParseException();
     }
 noDecl.adicionarFilho(new No("TIPO", tipoToken.image));
-                inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
+                    inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     t = jj_consume_token(IDENTIFICADOR);
 noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
-        if(t.image.length() > MAX){
-          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
-        }
-
-        inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-
-        if(tabelaSemantica.lastElement().containsKey(t.image)) {
-                        erroSemantico("A vari\u00e1vel '"+t.image+"' j\u00e1 foi declarada anteriormente.", t);
-        }
-        else {
-                        tabelaSemantica.lastElement().put(t.image, tipoAtual);
-        }
+    if (t.image.length() > MAX)
+    {
+      System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+    }
+    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+    if (tabelaSemantica.lastElement().containsKey(t.image))
+    {
+                              erroSemantico("A vari\u00e1vel '" + t.image + "' j\u00e1 foi declarada anteriormente.", t);
+    }
+    else
+    {
+                              tabelaSemantica.lastElement().put(t.image, tipoAtual);
+    }
     label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -924,18 +938,19 @@ noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
 inserirTokenUnico(reservada, "VIRGULA", t);
       t = jj_consume_token(IDENTIFICADOR);
 noDecl.adicionarFilho(new No("IDENTIFICADOR", t.image));
-          if(t.image.length() > MAX){
-            System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
-          }
-
-          inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-
-          if(tabelaSemantica.lastElement().containsKey(t.image)) {
-                        erroSemantico("A vari\u00e1vel '"+t.image+"' j\u00e1 foi declarada anteriormente.", t);
-          }
-          else {
-                        tabelaSemantica.lastElement().put(t.image, tipoAtual);
-          }
+      if (t.image.length() > MAX)
+      {
+        System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+      }
+      inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+      if (tabelaSemantica.lastElement().containsKey(t.image))
+      {
+                                erroSemantico("A vari\u00e1vel '" + t.image + "' j\u00e1 foi declarada anteriormente.", t);
+      }
+      else
+      {
+                                tabelaSemantica.lastElement().put(t.image, tipoAtual);
+      }
     }
     t = jj_consume_token(PONTO_VIRGULA);
 inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
@@ -945,15 +960,15 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // Função para chamada de funções
   final public No chamar_funcao() throws ParseException {Token t;
-    No noChamada = new No("CHAMADA_FUNCAO");
-    No args = null;
+  No noChamada = new No("CHAMADA_FUNCAO");
+  No args = null;
     t = jj_consume_token(IDENTIFICADOR);
 noChamada.adicionarFilho(new No("IDENTIFICADOR", t.image));
-        if(t.image.length() > MAX){
-          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
-        }
-
-        inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+    if (t.image.length() > MAX)
+    {
+      System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+    }
+    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
     t = jj_consume_token(ABRE_PARENTESIS);
 inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -984,8 +999,8 @@ inserirTokenUnico(reservada, "PONTO_VIRGULA", t);
 
 // Regra auxiliar para lista de argumentos em chamadas de função
   final public No lista_de_argumentos() throws ParseException {No noLista = new No("LISTA_ARGUMENTOS");
-        No expr;
-        Token t;
+          No expr;
+          Token t;
     expr = expressao();
 noLista.adicionarFilho(expr);
     label_8:
@@ -1010,10 +1025,14 @@ noLista.adicionarFilho(expr);
 
 // 20. DEFINIÇÃO DE FUNÇÕES
   final public No criar_funcoes() throws ParseException {Token t, tipoToken;
-    No noFuncao = new No("DEFINICAO_FUNCAO");
-    No params = null;
-    No bloco;
-        tabelaSemantica.push(new HashMap<>());
+  No noFuncao = new No("DEFINICAO_FUNCAO");
+  No params = null;
+  No bloco;
+          tabelaSemantica.push
+  (
+    new HashMap < > ()
+  )
+  ;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_VOID:{
       tipoToken = jj_consume_token(TOKEN_VOID);
@@ -1045,14 +1064,14 @@ noLista.adicionarFilho(expr);
       throw new ParseException();
     }
 noFuncao.adicionarFilho(new No("TIPO_RETORNO", tipoToken.image));
-
     inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     t = jj_consume_token(IDENTIFICADOR);
 noFuncao.adicionarFilho(new No("IDENTIFICADOR", t.image));
-        if(t.image.length() > MAX){
-          System.out.println("AVISO: IDENTIFICADOR_LONGO: "+ t.image);
-        }
-                inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
+    if (t.image.length() > MAX)
+    {
+      System.out.println("AVISO: IDENTIFICADOR_LONGO: " + t.image);
+    }
+                    inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
     t = jj_consume_token(ABRE_PARENTESIS);
 inserirTokenUnico(reservada, "ABRE_PARENTESIS", t);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1077,15 +1096,15 @@ inserirTokenUnico(reservada, "ABRE_CHAVES", t);
 noFuncao.adicionarFilho(bloco);
     t = jj_consume_token(FECHA_CHAVES);
 inserirTokenUnico(reservada, "FECHA_CHAVES", t);
-        tabelaSemantica.pop();
+            tabelaSemantica.pop();
 {if ("" != null) return noFuncao;}
     throw new Error("Missing return statement in function");
 }
 
 // Regra auxiliar para lista de parâmetros em definições de função
   final public No lista_de_parametros() throws ParseException {Token t, tipoToken;
-    No noLista = new No("LISTA_PARAMETROS");
-    String tipoParam = "";
+  No noLista = new No("LISTA_PARAMETROS");
+  String tipoParam = "";
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case TOKEN_INT:{
       tipoToken = jj_consume_token(TOKEN_INT);
@@ -1121,14 +1140,14 @@ inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
     t = jj_consume_token(IDENTIFICADOR);
 inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
 tabelaSemantica.lastElement().put(t.image, tipoParam);
-
-        No noParam = new No("PARAMETRO");
-        noParam.adicionarFilho(new No("TIPO", tipoToken.image));
-        noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
-        noLista.adicionarFilho(noParam);
-        if(t.image.length() > MAX){
-           System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-        }
+    No noParam = new No("PARAMETRO");
+    noParam.adicionarFilho(new No("TIPO", tipoToken.image));
+    noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
+    noLista.adicionarFilho(noParam);
+    if (t.image.length() > MAX)
+    {
+      System.out.println("IDENTIFICADOR_LONGO: " + t.image);
+    }
     label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1171,20 +1190,22 @@ inserirTokenUnico(reservada, "VIRGULA", t);
 inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
       t = jj_consume_token(IDENTIFICADOR);
 inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
-if(tabelaSemantica.lastElement().containsKey(t.image)) {
-                                erroSemantico("A vari\u00e1vel: "+t.image+"j\u00e1 foi declarada!", t);
-                  }
-                  else {
-                                tabelaSemantica.lastElement().put(t.image, tipoParam);
-                  }
-
-          No noParam1 = new No("PARAMETRO");
-          noParam.adicionarFilho(new No("TIPO", tipoToken.image));
-          noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
-          noLista.adicionarFilho(noParam);
-          if(t.image.length() > MAX){
-                System.out.println("IDENTIFICADOR_LONGO: "+ t.image);
-          }
+if (tabelaSemantica.lastElement().containsKey(t.image))
+      {
+                                        erroSemantico("A vari\u00e1vel: " + t.image + "j\u00e1 foi declarada!", t);
+                      }
+                      else
+      {
+                                        tabelaSemantica.lastElement().put(t.image, tipoParam);
+                      }
+      No noParam1 = new No("PARAMETRO");
+      noParam.adicionarFilho(new No("TIPO", tipoToken.image));
+      noParam.adicionarFilho(new No("IDENTIFICADOR", t.image));
+      noLista.adicionarFilho(noParam);
+      if (t.image.length() > MAX)
+      {
+                System.out.println("IDENTIFICADOR_LONGO: " + t.image);
+      }
     }
 {if ("" != null) return noLista;}
     throw new Error("Missing return statement in function");
@@ -1198,7 +1219,7 @@ if(tabelaSemantica.lastElement().containsKey(t.image)) {
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_428_9_10()
+  private boolean jj_3R_atribuicao_658_11_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1207,7 +1228,7 @@ if(tabelaSemantica.lastElement().containsKey(t.image)) {
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_428_9_10()) return true;
+    if (jj_3R_atribuicao_658_11_10()) return true;
     return false;
   }
 
