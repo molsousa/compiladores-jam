@@ -6,11 +6,23 @@ void main()
 	integer x;
 	integer x;
 	
-	j = x;
+	soma(x);
 	
 	// erro léxico
 	double @var;
 	
 	// erro sintático
 	character c
+}
+
+integer soma(integer a) {
+	
+	integer a;
+	integer b;
+	
+	a = 5;
+	
+	b = a + c;
+	
+	return b;
 }

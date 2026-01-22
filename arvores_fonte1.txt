@@ -12,16 +12,12 @@
       - TIPO: <integer>
       - IDENTIFICADOR: <x>
     - DECLARACAO_VARIAVEL
-      - TIPO: <float>
-      - IDENTIFICADOR: <y>
+      - TIPO: <integer>
+      - IDENTIFICADOR: <x>
     - CHAMADA_FUNCAO
       - IDENTIFICADOR: <soma>
       - LISTA_ARGUMENTOS
-        - INTEIRO: <5>
-        - INTEIRO: <8>
-    - DECLARACAO_VARIAVEL
-      - TIPO: <double>
-      - IDENTIFICADOR: <z>
+        - IDENTIFICADOR: <x>
 
 - DEFINICAO_FUNCAO
   - TIPO_RETORNO: <integer>
@@ -30,96 +26,21 @@
     - PARAMETRO
       - TIPO: <integer>
       - IDENTIFICADOR: <a>
-      - TIPO: <integer>
-      - IDENTIFICADOR: <b>
-    - PARAMETRO
-      - TIPO: <integer>
-      - IDENTIFICADOR: <a>
-      - TIPO: <integer>
-      - IDENTIFICADOR: <b>
   - BLOCO_COMANDOS
     - DECLARACAO_VARIAVEL
       - TIPO: <integer>
-      - IDENTIFICADOR: <y>
+      - IDENTIFICADOR: <a>
     - DECLARACAO_VARIAVEL
       - TIPO: <integer>
-      - IDENTIFICADOR: <c>
-    - DECLARACAO_VARIAVEL
-      - TIPO: <integer>
-      - IDENTIFICADOR: <i>
-    - LACO_FOR
-      - ATRIBUICAO_SIMPLES
-        - IDENTIFICADOR: <i>
-        - INTEIRO: <5>
-      - OPERACAO: <<>
-        - IDENTIFICADOR: <i>
-        - INTEIRO: <5>
-      - ATRIBUICAO_SIMPLES
-        - IDENTIFICADOR: <i>
-        - OPERACAO: <+>
-          - IDENTIFICADOR: <i>
-          - INTEIRO: <1>
-      - BLOCO_COMANDOS
-        - ATRIBUICAO
-          - IDENTIFICADOR: <c>
-          - IDENTIFICADOR: <i>
-    - LACO_FOR
-      - INICIALIZACAO_VAZIA
-      - CONDICAO_VAZIA
-      - INCREMENTO_VAZIO
-      - BLOCO_COMANDOS
-    - LACO_WHILE
-      - OPERACAO: <==>
-        - IDENTIFICADOR: <i>
-        - INTEIRO: <5>
-      - BLOCO_COMANDOS
-    - ATRIBUICAO
-      - IDENTIFICADOR: <c>
-      - OPERACAO: <*>
-        - IDENTIFICADOR: <a>
-        - IDENTIFICADOR: <b>
-    - ATRIBUICAO
-      - IDENTIFICADOR: <c>
-      - OPERACAO: <*>
-        - INTEIRO: <5>
-        - INTEIRO: <2>
-    - RETORNO
-      - IDENTIFICADOR: <c>
-
-- DEFINICAO_FUNCAO
-  - TIPO_RETORNO: <float>
-  - IDENTIFICADOR: <subtrai>
-  - LISTA_PARAMETROS
-    - PARAMETRO
-      - TIPO: <float>
-      - IDENTIFICADOR: <a>
-      - TIPO: <float>
       - IDENTIFICADOR: <b>
-    - PARAMETRO
-      - TIPO: <float>
+    - ATRIBUICAO
       - IDENTIFICADOR: <a>
-      - TIPO: <float>
+      - INTEIRO: <5>
+    - ATRIBUICAO
       - IDENTIFICADOR: <b>
-  - BLOCO_COMANDOS
-    - ESTRUTURA_IF
-      - OPERACAO: <==>
+      - OPERACAO: <+>
         - IDENTIFICADOR: <a>
-        - IDENTIFICADOR: <b>
-      - BLOCO_COMANDOS
-        - ATRIBUICAO
-          - IDENTIFICADOR: <a>
-          - OPERACAO: <+>
-            - IDENTIFICADOR: <a>
-            - IDENTIFICADOR: <b>
-        - RETORNO
-          - IDENTIFICADOR: <a>
-      - BLOCO_ELSE
-        - BLOCO_COMANDOS
-          - ATRIBUICAO
-            - IDENTIFICADOR: <b>
-            - OPERACAO: <+>
-              - IDENTIFICADOR: <b>
-              - IDENTIFICADOR: <a>
+        - IDENTIFICADOR: <c>
     - RETORNO
       - IDENTIFICADOR: <b>
 

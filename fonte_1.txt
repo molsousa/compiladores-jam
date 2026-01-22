@@ -16,6 +16,8 @@ integer soma(integer a, integer b)
     integer c;
     integer i;
     
+    float d;
+    
     for(i = 5; i < 5; i = i+1){
     	c = i;
     }
