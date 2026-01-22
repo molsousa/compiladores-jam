@@ -47,9 +47,6 @@
     - DECLARACAO_VARIAVEL
       - TIPO: <integer>
       - IDENTIFICADOR: <i>
-    - DECLARACAO_VARIAVEL
-      - TIPO: <integer>
-      - IDENTIFICADOR: <a>
     - LACO_FOR
       - ATRIBUICAO_SIMPLES
         - IDENTIFICADOR: <i>
