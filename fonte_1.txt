@@ -15,6 +15,7 @@ integer soma(integer a, integer b)
     integer y;
     integer c;
     integer i;
+    integer x;
     
     float d;
     

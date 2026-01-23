@@ -20,9 +20,43 @@ public class JAM {
   public static LinkedList < InfoToken > simbolo = new LinkedList < > ();
   public static Stack < Map < String, String > > tabelaSemantica = new Stack < > ();
   private static final int MAX = 32;
+
+  public static void textoInterface() {
+	System.out.println("\u001B[1;32m");
+    System.out.println("\u001B[35m                 O");
+    System.out.println("\u001B[31m               o/\u001B[35m/\u001B[32m/o");
+    System.out.println("\u001B[31m            o////\u001B[35m/\u001B[32m////o");
+    System.out.println("\u001B[31m          ///o///\u001B[35m/\u001B[32m///o///");
+    System.out.println("\u001B[31m       o////o////\u001B[35m/\u001B[32m////o////o");
+    System.out.println("\u001B[31m     o//////o////\u001B[35m/\u001B[32m////o//////o");
+	System.out.println("\u001B[31m   ///o////O/////\u001B[35mO\u001B[32m/////O////o///");
+    System.out.println("\u001B[31m  ///o//////o////\u001B[35m/\u001B[32m////o//////o///");
+    System.out.println("\u001B[35m O///o//////O/////////O//////o///O");
+    System.out.println("\u001B[34m  ///o//////o////\u001B[35m/\u001B[33m////o//////o///");
+    System.out.println("\u001B[34m   ///o////O/////\u001B[35mO\u001B[33m/////O////o///");
+    System.out.println("\u001B[34m     o//////o////\u001B[35m/\u001B[33m////o//////o");
+    System.out.println("\u001B[34m       o////o////\u001B[35m/\u001B[33m////o////o");
+    System.out.println("\u001B[34m          ///o///\u001B[35m/\u001B[33m///o///");
+    System.out.println("\u001B[34m            o////\u001B[35m/\u001B[33m////o");
+    System.out.println("\u001B[34m               o/\u001B[35m/\u001B[33m/o");
+    System.out.println("\u001B[35m                 \u001B[35mO");
+    System.out.println("");
+    System.out.println("\u001B[31m  =============== \u001B[33m     ====     \u001B[32m  ====           ====  ");
+    System.out.println("\u001B[31m    ============= \u001B[33m    ======    \u001B[32m   =====       =====   ");
+    System.out.println("\u001B[31m       ======     \u001B[33m   ========   \u001B[32m   ======     ======   ");
+    System.out.println("\u001B[31m        ====      \u001B[33m  ====  ====  \u001B[32m   ===  === ===  ===   ");
+    System.out.println("\u001B[31m        ====      \u001B[33m  ===    ===  \u001B[32m   ===   =====   ===   ");
+    System.out.println("\u001B[31m         ===      \u001B[33m  ===    ===  \u001B[32m   ===    ===    ===   ");
+    System.out.println("\u001B[31m         ===      \u001B[33m  ==========  \u001B[32m   ===     =     ===   ");
+    System.out.println("\u001B[31m   ====  ===      \u001B[33m  ==========  \u001B[32m   ===           ===   ");
+    System.out.println("\u001B[31m    ==    ==      \u001B[33m  ===    ===  \u001B[32m   ===           ===   ");
+    System.out.println("\u001B[31m     =======      \u001B[33m  ===    ===  \u001B[32m   ===           ===   ");
+    System.out.println("\u001B[31m      =====       \u001B[33m =====  ===== \u001B[32m  =====         =====  ");
+    System.out.println("\u001B[m");
+  }
   
   public void erroSemantico(String mensagem, Token t) {
-		    System.err.println("Erro semântico (Linha: " + t.beginLine + ", Coluna: " + t.beginColumn + "): " + mensagem);
+	System.err.println("Erro semântico (Linha: " + t.beginLine + ", Coluna: " + t.beginColumn + "): " + mensagem);
   }
 
   public void escreverArvoresEmArquivo(LinkedList < No > arvores, String nomeArquivo) throws IOException {
@@ -61,7 +95,9 @@ public class JAM {
     Scanner scanner = new Scanner(System.in);
     int opcao;
     
-    System.out.print("Insira o nome do arquivos: ");
+	textoInterface();
+    
+    System.out.print("Insira o nome do arquivo: ");
     try {
       arquivo = new FileInputStream(scanner.nextLine());
     } catch(FileNotFoundException e) {
@@ -72,10 +108,14 @@ public class JAM {
       parser = new JAM(arquivo);
       parser.inicializar_programa();
 		do {
+		  	System.out.println("=============================================");
+		  	System.out.println("=============================================");
 	        System.out.println("1 - Imprimir tabela de simbolos");
 	        System.out.println("2 - Imprimir tabela de palavras reservadas");
 	        System.out.println("0 - Sair");
-	        System.out.print("Selecione uma opcao:");
+			System.out.println("=============================================");
+			System.out.println("=============================================");
+	        System.out.print("Selecione uma opcao: ");
 	        opcao = scanner.nextInt();
 	        
 	        switch (opcao){
@@ -588,7 +628,7 @@ No atribuicao() : {
 	    
 	    if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
 	      if (!tipoVariavel.equals(expr.tipoDado)) {
-	        erroSemantico("Tipos incompatíveis: variável do tipo '" + tipoVariavel + "', recebe uma expressão do tipo: " + expr.tipoDado, t);
+	        erroSemantico("Tipos incompatíveis, variável do tipo: '" + tipoVariavel + "', recebe uma expressão do tipo: '" + expr.tipoDado+"'", t);
 	      }
 	    }
 	  }
@@ -932,7 +972,7 @@ No declarar_variavel() : {
 		    
 		    if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
 		      if (!tipoVariavel.equals(expr.tipoDado)) {
-		        erroSemantico("Tipos incompatíveis: variável do tipo '" + tipoVariavel + "', recebe uma expressão do tipo: " + expr.tipoDado, t);
+		        erroSemantico("Tipos incompatíveis, variável do tipo: '" + tipoVariavel + "', recebe uma expressão do tipo: " + expr.tipoDado+"'", t);
 		      }
 		    }
 	  }
@@ -1116,7 +1156,7 @@ No lista_de_parametros() :
       inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
     } {
       if (tabelaSemantica.lastElement().containsKey(t.image)) {
-		erroSemantico("A variável: " + t.image + " já foi declarada!", t);
+		erroSemantico("A variável: '" + t.image + "' já foi declarada.", t);
       }
       else {
         tabelaSemantica.lastElement().put(t.image, tipoParam);

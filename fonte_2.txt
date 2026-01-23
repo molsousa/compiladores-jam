@@ -15,10 +15,13 @@ void main()
 	// character c
 }
 
-integer soma(integer a) {
+integer soma(integer a, float a) {
 	
 	integer a = 6.45;
 	integer b;
+	float d;
+	
+	d = b;
 	
 	a = 5;
 	

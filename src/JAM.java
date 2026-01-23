@@ -17,8 +17,42 @@ public class JAM implements JAMConstants {
   public static Stack < Map < String, String > > tabelaSemantica = new Stack < > ();
   private static final int MAX = 32;
 
+  public static void textoInterface() {
+        System.out.println("\u001b[1;32m");
+    System.out.println("\u001b[35m                 O");
+    System.out.println("\u001b[31m               o/\u001b[35m/\u001b[32m/o");
+    System.out.println("\u001b[31m            o////\u001b[35m/\u001b[32m////o");
+    System.out.println("\u001b[31m          ///o///\u001b[35m/\u001b[32m///o///");
+    System.out.println("\u001b[31m       o////o////\u001b[35m/\u001b[32m////o////o");
+    System.out.println("\u001b[31m     o//////o////\u001b[35m/\u001b[32m////o//////o");
+        System.out.println("\u001b[31m   ///o////O/////\u001b[35mO\u001b[32m/////O////o///");
+    System.out.println("\u001b[31m  ///o//////o////\u001b[35m/\u001b[32m////o//////o///");
+    System.out.println("\u001b[35m O///o//////O/////////O//////o///O");
+    System.out.println("\u001b[34m  ///o//////o////\u001b[35m/\u001b[33m////o//////o///");
+    System.out.println("\u001b[34m   ///o////O/////\u001b[35mO\u001b[33m/////O////o///");
+    System.out.println("\u001b[34m     o//////o////\u001b[35m/\u001b[33m////o//////o");
+    System.out.println("\u001b[34m       o////o////\u001b[35m/\u001b[33m////o////o");
+    System.out.println("\u001b[34m          ///o///\u001b[35m/\u001b[33m///o///");
+    System.out.println("\u001b[34m            o////\u001b[35m/\u001b[33m////o");
+    System.out.println("\u001b[34m               o/\u001b[35m/\u001b[33m/o");
+    System.out.println("\u001b[35m                 \u001b[35mO");
+    System.out.println("");
+    System.out.println("\u001b[31m  =============== \u001b[33m     ====     \u001b[32m  ====           ====  ");
+    System.out.println("\u001b[31m    ============= \u001b[33m    ======    \u001b[32m   =====       =====   ");
+    System.out.println("\u001b[31m       ======     \u001b[33m   ========   \u001b[32m   ======     ======   ");
+    System.out.println("\u001b[31m        ====      \u001b[33m  ====  ====  \u001b[32m   ===  === ===  ===   ");
+    System.out.println("\u001b[31m        ====      \u001b[33m  ===    ===  \u001b[32m   ===   =====   ===   ");
+    System.out.println("\u001b[31m         ===      \u001b[33m  ===    ===  \u001b[32m   ===    ===    ===   ");
+    System.out.println("\u001b[31m         ===      \u001b[33m  ==========  \u001b[32m   ===     =     ===   ");
+    System.out.println("\u001b[31m   ====  ===      \u001b[33m  ==========  \u001b[32m   ===           ===   ");
+    System.out.println("\u001b[31m    ==    ==      \u001b[33m  ===    ===  \u001b[32m   ===           ===   ");
+    System.out.println("\u001b[31m     =======      \u001b[33m  ===    ===  \u001b[32m   ===           ===   ");
+    System.out.println("\u001b[31m      =====       \u001b[33m =====  ===== \u001b[32m  =====         =====  ");
+    System.out.println("\u001b[m");
+  }
+
   public void erroSemantico(String mensagem, Token t) {
-                    System.err.println("Erro sem\u00e2ntico (Linha: " + t.beginLine + ", Coluna: " + t.beginColumn + "): " + mensagem);
+        System.err.println("Erro sem\u00e2ntico (Linha: " + t.beginLine + ", Coluna: " + t.beginColumn + "): " + mensagem);
   }
 
   public void escreverArvoresEmArquivo(LinkedList < No > arvores, String nomeArquivo) throws IOException {
@@ -57,7 +91,9 @@ public class JAM implements JAMConstants {
     Scanner scanner = new Scanner(System.in);
     int opcao;
 
-    System.out.print("Insira o nome do arquivos: ");
+        textoInterface();
+
+    System.out.print("Insira o nome do arquivo: ");
     try {
       arquivo = new FileInputStream(scanner.nextLine());
     } catch(FileNotFoundException e) {
@@ -68,10 +104,14 @@ public class JAM implements JAMConstants {
       parser = new JAM(arquivo);
       parser.inicializar_programa();
                 do {
+                        System.out.println("=============================================");
+                        System.out.println("=============================================");
                 System.out.println("1 - Imprimir tabela de simbolos");
                 System.out.println("2 - Imprimir tabela de palavras reservadas");
                 System.out.println("0 - Sair");
-                System.out.print("Selecione uma opcao:");
+                        System.out.println("=============================================");
+                        System.out.println("=============================================");
+                System.out.print("Selecione uma opcao: ");
                 opcao = scanner.nextInt();
 
                 switch (opcao){
@@ -519,7 +559,7 @@ noAtrib.adicionarFilho(expr);
 
             if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
               if (!tipoVariavel.equals(expr.tipoDado)) {
-                erroSemantico("Tipos incompat\u00edveis: vari\u00e1vel do tipo '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: " + expr.tipoDado, t);
+                erroSemantico("Tipos incompat\u00edveis, vari\u00e1vel do tipo: '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: '" + expr.tipoDado+"'", t);
               }
             }
     t = jj_consume_token(PONTO_VIRGULA);
@@ -840,7 +880,7 @@ no = new No("IDENTIFICADOR", t.image);
         no.tipoDado = tabelaSemantica.lastElement().get(t.image);
       }
       else{
-        erroSemantico("A vari\u00e1vel '" + t.image + "'n\u00e3o foi declarada.", t);
+        erroSemantico("A vari\u00e1vel '" + t.image + "' n\u00e3o foi declarada.", t);
         no.tipoDado = "erro";
       }
       break;
@@ -966,7 +1006,7 @@ noAtrib.adicionarFilho(expr);
 
                     if (!tipoVariavel.equals("unknown") && expr.tipoDado != null && !expr.tipoDado.equals("erro")) {
                       if (!tipoVariavel.equals(expr.tipoDado)) {
-                        erroSemantico("Tipos incompat\u00edveis: vari\u00e1vel do tipo '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: " + expr.tipoDado, t);
+                        erroSemantico("Tipos incompat\u00edveis, vari\u00e1vel do tipo: '" + tipoVariavel + "', recebe uma express\u00e3o do tipo: " + expr.tipoDado+"'", t);
                       }
                     }
       break;
@@ -1213,7 +1253,7 @@ inserirTokenUnico(reservada, "TIPO_DADO", tipoToken);
       t = jj_consume_token(IDENTIFICADOR);
 inserirTokenUnico(simbolo, "IDENTIFICADOR", t);
 if (tabelaSemantica.lastElement().containsKey(t.image)) {
-                erroSemantico("A vari\u00e1vel: " + t.image + "j\u00e1 foi declarada!", t);
+                erroSemantico("A vari\u00e1vel: '" + t.image + "' j\u00e1 foi declarada.", t);
       }
       else {
         tabelaSemantica.lastElement().put(t.image, tipoParam);
@@ -1239,7 +1279,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_atribuicao_573_9_10()
+  private boolean jj_3R_atribuicao_613_9_10()
  {
     if (jj_scan_token(IDENTIFICADOR)) return true;
     if (jj_scan_token(ATRIBUICAO)) return true;
@@ -1248,7 +1288,7 @@ if (tabelaSemantica.lastElement().containsKey(t.image)) {
 
   private boolean jj_3_1()
  {
-    if (jj_3R_atribuicao_573_9_10()) return true;
+    if (jj_3R_atribuicao_613_9_10()) return true;
     return false;
   }
 
